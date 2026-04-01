@@ -24,14 +24,14 @@
               </svg>
               {{ booking.organizer }}
             </span>
-            <span v-if="booking.attendeeIds?.length" class="flex items-center gap-1 text-[12px] text-gray-500 dark:text-gray-400">
+            <span v-if="booking.attendeeIds?.length || booking.externalAttendeeNames?.length" class="flex items-center gap-1 text-[12px] text-gray-500 dark:text-gray-400">
               <svg width="13" height="11" viewBox="0 0 18 14" fill="none" class="flex-shrink-0 text-gray-400">
                 <circle cx="6" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
                 <path d="M0.5 13c0-3 2.5-5.2 5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
                 <circle cx="12" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
                 <path d="M17.5 13c0-3-2.5-5.2-5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
               </svg>
-              {{ resolveAttendees(booking.attendeeIds) }}
+              {{ resolveAttendees(booking.attendeeIds, booking.externalAttendeeNames) }}
             </span>
           </div>
           <p v-if="booking.description" class="flex items-start gap-1 text-[12px] text-gray-500 mt-1.5 leading-relaxed">

@@ -30,17 +30,25 @@ export function useAttendeeSearch(form, currentUserId, editBooking) {
           if (user) selectedAttendees.value.push(user);
         });
       }
+      // 수정 모드: 외부 참석자 pre-fill
+      if (editBooking?.externalAttendeeNames?.length) {
+        editBooking.externalAttendeeNames.forEach(name => {
+          selectedAttendees.value.push({ name, id: null, employeeId: `guest_${Date.now()}_${Math.random()}` });
+        });
+      }
     } catch (e) {
       console.error('[attendee] failed to load users:', e.response?.status, e.message);
     }
   };
 
-  // ── DB 유저 ID 목록을 form.attendeeIds에 동기화 ───────────────
+  // ── 참석자 동기화 (DB 유저 → attendeeIds, 외부인 → externalAttendees) ─
   const syncAttendees = () => {
-    // id가 있는 DB 사용자만 포함 (free-text 게스트 제외)
     form.attendeeIds = selectedAttendees.value
       .filter(a => a.id != null)
       .map(a => a.id);
+    form.externalAttendees = selectedAttendees.value
+      .filter(a => a.id == null)
+      .map(a => a.name);
   };
 
   // ── 자동완성 필터링 ───────────────────────────────────────────

@@ -151,14 +151,14 @@
                               </svg>
                               {{ b.organizer }}
                             </p>
-                            <p v-if="b.attendeeIds?.length" class="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
+                            <p v-if="b.attendeeIds?.length || b.externalAttendeeNames?.length" class="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
                               <svg width="11" height="10" viewBox="0 0 18 14" fill="none" class="flex-shrink-0">
                                 <circle cx="6" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
                                 <path d="M0.5 13c0-3 2.5-5.2 5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
                                 <circle cx="12" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
                                 <path d="M17.5 13c0-3-2.5-5.2-5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
                               </svg>
-                              {{ resolveAttendees(b.attendeeIds) }}
+                              {{ resolveAttendees(b.attendeeIds, b.externalAttendeeNames) }}
                             </p>
                           </div>
                           <div v-if="canEditOrCancel(b)" class="flex gap-1.5 flex-shrink-0 pt-0.5">
@@ -256,14 +256,14 @@
                               </svg>
                               {{ b.organizer }}
                             </p>
-                            <p v-if="b.attendeeIds?.length" class="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
+                            <p v-if="b.attendeeIds?.length || b.externalAttendeeNames?.length" class="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
                               <svg width="11" height="10" viewBox="0 0 18 14" fill="none" class="flex-shrink-0">
                                 <circle cx="6" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
                                 <path d="M0.5 13c0-3 2.5-5.2 5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
                                 <circle cx="12" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
                                 <path d="M17.5 13c0-3-2.5-5.2-5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
                               </svg>
-                              {{ resolveAttendees(b.attendeeIds) }}
+                              {{ resolveAttendees(b.attendeeIds, b.externalAttendeeNames) }}
                             </p>
                           </div>
                           <div v-if="canEditOrCancel(b)" class="flex gap-1.5 flex-shrink-0 pt-0.5">

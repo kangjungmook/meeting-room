@@ -35,7 +35,6 @@ async function tryAutoLogin() {
     localStorage.setItem('token', res.data.token);
     localStorage.setItem('refreshToken', res.data.refreshToken);
     sessionStorage.setItem('adminAuth', 'true');
-    sessionStorage.setItem('kioskAuth', 'true');
   } catch {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('token');
@@ -62,8 +61,6 @@ router.beforeEach(async (to) => {
 
   if (to.meta.requiresLogin && !token) return { path: '/' };
   if (to.meta.requiresAdmin && !sessionStorage.getItem('adminAuth')) return { path: '/' };
-  if (to.meta.requiresKiosk && !sessionStorage.getItem('kioskAuth')) return { path: '/' };
-
 
   return true;
 });

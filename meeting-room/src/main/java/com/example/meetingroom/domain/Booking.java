@@ -21,7 +21,6 @@ public class Booking {
     @Column(name = "room_id", nullable = false)
     private Long roomId;
 
-    // 예약자 DB ID (users.id)
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
@@ -51,9 +50,14 @@ public class Booking {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // DB에 저장하지 않는 참석자 ID 목록 (서비스 레이어에서 주입)
+    @Column(name = "external_attendees", length = 2000)
+    private String externalAttendees;
+
     @Transient
     private List<Long> attendeeIds;
+
+    @Transient
+    private List<String> externalAttendeeNames;
 
     @PrePersist
     public void prePersist() {

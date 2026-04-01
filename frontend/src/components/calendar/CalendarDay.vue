@@ -12,7 +12,7 @@
         <!-- 헤더 -->
         <div class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 flex items-center"
              :style="{ height: HEADER_H + 'px' }">
-          <span class="text-[10.5px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">회의실</span>
+          <span class="text-[11.5px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">회의실</span>
         </div>
 
         <!-- 회의실 행 -->
@@ -21,12 +21,12 @@
              :class="ri % 2 === 1 ? 'bg-gray-50 dark:bg-gray-800/50' : 'bg-white dark:bg-gray-900'"
              :style="{ height: ROW_H + 'px' }">
           <div class="flex items-center gap-2 w-full min-w-0">
-            <span class="flex-shrink-0 w-[3px] rounded-full"
-                  :style="{ background: room.colorCode, height: '28px' }">
+            <span class="flex-shrink-0 w-1 rounded-full"
+                  :style="{ background: room.colorCode, height: '36px' }">
             </span>
             <div class="min-w-0 flex-1">
-              <p class="text-[12px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">{{ room.name }}</p>
-              <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
+              <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 truncate leading-tight">{{ room.name }}</p>
+              <p class="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
             </div>
           </div>
         </div>
@@ -42,12 +42,12 @@
             <div v-for="h in hours" :key="h"
                  class="absolute top-0 bottom-0 flex items-center pointer-events-none"
                  :style="{ left: ((h - 6) / HOUR_COUNT * 100) + '%' }">
-              <span class="text-[11px] font-medium text-gray-400 dark:text-gray-500 pl-1.5 whitespace-nowrap select-none">
+              <span class="text-[12px] font-semibold text-gray-400 dark:text-gray-500 pl-2 whitespace-nowrap select-none">
                 {{ String(h).padStart(2, '0') }}:00
               </span>
             </div>
             <div class="absolute top-0 bottom-0 right-0 flex items-center pointer-events-none">
-              <span class="text-[11px] font-medium text-gray-400 dark:text-gray-500 pr-1.5 select-none">21:00</span>
+              <span class="text-[12px] font-semibold text-gray-400 dark:text-gray-500 pr-2 select-none">21:00</span>
             </div>
           </div>
 
@@ -89,10 +89,10 @@
                    @mouseenter="showTooltip(b, $event)"
                    @mouseleave="!tooltip.pinned && (tooltip.show = false)"
                    @click.stop="pinTooltip(b, $event)">
-                <div class="h-full flex flex-col justify-center px-2.5 overflow-hidden">
-                  <p class="text-[12px] font-bold text-gray-900 truncate leading-tight">{{ b.title }}</p>
+                <div class="h-full flex flex-col justify-center px-3 overflow-hidden">
+                  <p class="text-[13px] font-bold text-white truncate leading-tight">{{ b.title }}</p>
                   <p v-if="chipMinutes(b.startTime, b.endTime) >= 30"
-                     class="text-[10.5px] text-gray-700 truncate mt-0.5">
+                     class="text-[11.5px] text-white/90 truncate mt-0.5">
                     {{ dayjs(b.startTime).format('HH:mm') }}–{{ dayjs(b.endTime).format('HH:mm') }}
                   </p>
                 </div>
@@ -143,12 +143,12 @@ const {
 } = useApp();
 
 // ── 레이아웃 상수 ─────────────────────────────────────────────
-const ROOM_COL    = computed(() => isMobile.value ? 96  : 156);
-const ROW_H       = computed(() => isMobile.value ? 72  : 84);
-const HEADER_H    = 38;
+const ROOM_COL    = computed(() => isMobile.value ? 108 : 176);
+const ROW_H       = computed(() => isMobile.value ? 88  : 116);
+const HEADER_H    = 48;
 const HOUR_START  = 6;
 const HOUR_COUNT  = hours.length; // 15 (06~20)
-const MIN_TRACK_W = computed(() => isMobile.value ? 1000 : 1800);
+const MIN_TRACK_W = computed(() => isMobile.value ? 1100 : 2000);
 
 // ── 현재 시간 세로선 % ─────────────────────────────────────────
 const nowLinePct = computed(() => {
@@ -176,8 +176,8 @@ const calcGanttPos = (b, color) => {
   const st = dayjs(b.startTime).hour() + dayjs(b.startTime).minute() / 60;
   const en = dayjs(b.endTime).hour()   + dayjs(b.endTime).minute()   / 60;
   return {
-    top:        '10px',
-    bottom:     '10px',
+    top:        '14px',
+    bottom:     '14px',
     left:       `${Math.max(0, (st - HOUR_START) / HOUR_COUNT * 100)}%`,
     width:      `${Math.max(0.5, (en - st) / HOUR_COUNT * 100)}%`,
     background: color,

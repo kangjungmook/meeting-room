@@ -86,18 +86,10 @@
 
       <!-- 시간 선택 -->
       <div class="flex flex-col gap-2">
-        <!-- 헤더: 현재 시각 + 지금부터 -->
+        <!-- 헤더: 현재 시각 -->
         <div class="flex items-center gap-2">
           <label class="text-[12px] font-black text-slate-500 uppercase tracking-wider">시간 선택</label>
           <span class="text-[12px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg tabular-nums">현재 {{ fmtCurrentTime }}</span>
-          <button v-if="isToday" type="button" @click="jumpToNow"
-            class="flex items-center gap-1 text-[10px] font-bold text-indigo-500 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-full transition-colors">
-            <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-              <circle cx="6" cy="6" r="5" stroke="#6366f1" stroke-width="1.5"/>
-              <path d="M6 3v3.5l2 1.5" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            지금부터
-          </button>
         </div>
 
         <!-- 시작/종료 드롭다운 -->
@@ -138,11 +130,12 @@
             </div>
           </div>
 
-          <!-- 화살표 -->
-          <div class="flex items-center pb-3 flex-shrink-0 px-1">
+          <!-- 화살표 + 소요시간 -->
+          <div class="flex flex-col items-center justify-end pb-3 flex-shrink-0 px-1 gap-0.5">
             <svg width="16" height="8" viewBox="0 0 18 8" fill="none">
               <path d="M0 4h16M11 1l4 3-4 3" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
+            <span v-if="durationLabel" class="text-[10px] font-bold text-indigo-400 whitespace-nowrap tabular-nums">{{ durationLabel }}</span>
           </div>
 
           <!-- 종료 드롭다운 -->
@@ -183,10 +176,6 @@
             </div>
           </div>
 
-          <!-- 소요시간 뱃지 -->
-          <div v-if="durationLabel" class="flex items-center pb-3 flex-shrink-0">
-            <span class="text-[11px] font-black text-indigo-500 bg-indigo-50 px-2 py-1.5 rounded-lg whitespace-nowrap">{{ durationLabel }}</span>
-          </div>
         </div>
 
         <!-- 소요시간 빠른 선택 -->
@@ -352,7 +341,8 @@ const form = reactive({
   roomId:      editBooking?.roomId || props.initialData?.roomId || '',
   startDate:   editBooking ? dayjs(editBooking.startTime).format('YYYY-MM-DD') : defaultDateStr,
   title:       editBooking?.title || '',
-  attendeeIds: [], // Long[] — useAttendeeSearch의 syncAttendees()가 채워줌
+  attendeeIds: [],        // Long[] — useAttendeeSearch의 syncAttendees()가 채워줌
+  externalAttendees: [],  // String[] — 외부 참석자 이름
   description: editBooking?.description || '',
 });
 
@@ -421,6 +411,7 @@ const submitBooking = async () => {
       title:       form.title,
       organizer:   userName,
       attendeeIds: form.attendeeIds.length ? form.attendeeIds : null,
+      externalAttendees: form.externalAttendees.length ? form.externalAttendees : null,
       description: form.description || null,
       startTime:   `${form.startDate}T${selectedStart.value}:00`,
       endTime:     `${form.startDate}T${selectedEnd.value}:00`,

@@ -6,11 +6,11 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 export default defineConfig({
   plugins: [
     vue(),
-    tailwindcss(),
-    basicSsl()
+    tailwindcss()
+    // basicSsl()
   ],
   server: {
-    https: true,
+    https: false,
     host: true,
     port: 5173,
     allowedHosts: true,

@@ -2,7 +2,6 @@ package com.example.meetingroom.service;
 
 import com.example.meetingroom.domain.Booking;
 import com.example.meetingroom.domain.BookingAttendee;
-import com.example.meetingroom.domain.BookingStatus;
 import com.example.meetingroom.dto.BookingRequestDto;
 import com.example.meetingroom.repository.BookingAttendeeRepository;
 import com.example.meetingroom.repository.BookingRepository;
@@ -15,9 +14,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -54,12 +55,6 @@ public class BookingService {
         return bookings;
     }
 
-    public long countUpcomingBookings(LocalDateTime now) {
-        return bookingRepository.findAll().stream()
-                .filter(b -> b.getStartTime().isAfter(now) && b.getStatus() != BookingStatus.CANCELLED)
-                .count();
-    }
-
     // ── 예약 생성 ──────────────────────────────────────────────
     @Transactional
     public Booking createBooking(BookingRequestDto dto, Long userId) {
@@ -80,6 +75,7 @@ public class BookingService {
                 .startTime(dto.getStartTime())
                 .endTime(dto.getEndTime())
                 .description(dto.getDescription())
+                .externalAttendees(toExternalStr(dto.getExternalAttendees()))
                 .build();
 
         Booking saved = bookingRepository.save(booking);
@@ -139,9 +135,11 @@ public class BookingService {
         booking.setStartTime(dto.getStartTime());
         booking.setEndTime(dto.getEndTime());
         booking.setDescription(dto.getDescription());
+        booking.setExternalAttendees(toExternalStr(dto.getExternalAttendees()));
 
         Booking updated = bookingRepository.save(booking);
         bookingAttendeeRepository.deleteByBookingId(id);
+        bookingAttendeeRepository.flush();
         saveAttendees(id, dto.getAttendeeIds());
         populateAttendeeIds(updated);
 
@@ -246,8 +244,23 @@ public class BookingService {
         );
     }
 
-    /** Booking 엔티티에 attendeeIds 주입 (응답 직렬화용) */
+    /** Booking 엔티티에 attendeeIds / externalAttendeeNames 주입 (응답 직렬화용) */
     public void populateAttendeeIds(Booking booking) {
         booking.setAttendeeIds(bookingAttendeeRepository.findUserIdsByBookingId(booking.getId()));
+        if (booking.getExternalAttendees() != null && !booking.getExternalAttendees().isBlank()) {
+            booking.setExternalAttendeeNames(
+                Arrays.asList(booking.getExternalAttendees().split(","))
+            );
+        }
+    }
+
+    /** 외부 참석자 이름 목록을 콤마 구분 문자열로 변환 */
+    private String toExternalStr(List<String> names) {
+        if (names == null || names.isEmpty()) return null;
+        String result = names.stream()
+            .map(String::trim)
+            .filter(s -> !s.isBlank())
+            .collect(Collectors.joining(","));
+        return result.isBlank() ? null : result;
     }
 }

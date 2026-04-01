@@ -16,7 +16,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // 초기 어드민 계정 정보 — 필요시 변경 가능
+    // 초기 어드민 계정 정보
     private static final String ADMIN_EMPLOYEE_ID = "admin";
     private static final String ADMIN_PASSWORD     = "Admin1234!";
     private static final String ADMIN_NAME         = "관리자";
@@ -31,7 +31,7 @@ public class DataInitializer implements CommandLineRunner {
                 admin.setStatus("APPROVED");
                 admin.setPasswordResetRequired(false);
                 userRepository.save(admin);
-                log.info("✅ 어드민 계정 비밀번호 리셋 완료 [사번: {}]", ADMIN_EMPLOYEE_ID);
+                log.info("어드민 계정 비밀번호 리셋 완료 [사번: {}]", ADMIN_EMPLOYEE_ID);
             },
             () -> {
                 // 없으면 새로 생성
@@ -42,7 +42,7 @@ public class DataInitializer implements CommandLineRunner {
                     .role("ADMIN")
                     .status("APPROVED")
                     .build());
-                log.info("✅ 어드민 계정 최초 생성 완료 [사번: {}]", ADMIN_EMPLOYEE_ID);
+                log.info("어드민 계정 최초 생성 완료 [사번: {}]", ADMIN_EMPLOYEE_ID);
             }
         );
     }

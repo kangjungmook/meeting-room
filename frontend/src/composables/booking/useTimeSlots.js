@@ -154,16 +154,6 @@ export function useTimeSlots(form, bookings, editBooking) {
     return (eh * 60 + em) - (sh * 60 + sm);
   });
 
-  // ── 지금부터 ──────────────────────────────────────────────────
-  const jumpToNow = () => {
-    if (!isToday.value) return;
-    const hhmm = dayjs().format('HH:mm');
-    if (hhmm < '06:00' || hhmm >= '21:00') return;
-    selectedStart.value = hhmm;
-    startOpen.value = false;
-    if (selectedEnd.value && selectedEnd.value <= hhmm) selectedEnd.value = null;
-  };
-
   // ── 빠른 소요시간 선택 ────────────────────────────────────────
   const quickDurations = computed(() => {
     const opts = [
@@ -219,7 +209,7 @@ export function useTimeSlots(form, bookings, editBooking) {
     pickStart, pickEnd,
     onStartInput, onEndInput,
     durationFrom, durationLabel, activeDuration,
-    jumpToNow, quickDurations, setDuration,
+    quickDurations, setDuration,
     conflictingBookings, hasConflict,
     clearSelection, closeStartDelayed, closeEndDelayed,
   };

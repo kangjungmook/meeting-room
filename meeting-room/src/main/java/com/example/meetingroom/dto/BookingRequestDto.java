@@ -15,4 +15,5 @@ public class BookingRequestDto {
     private LocalDateTime endTime;
     private String description;
     private List<Long> attendeeIds;
+    private List<String> externalAttendees;
 }

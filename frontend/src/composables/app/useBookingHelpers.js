@@ -8,10 +8,12 @@ import { isAdmin, currentUser } from './useAuth';
 // ── 룸 / 예약 헬퍼 ────────────────────────────────────────────
 export const getRoomColor     = (id) => rooms.value.find(r => r.id === id)?.colorCode ?? '#6366f1';
 export const getRoomName      = (id) => rooms.value.find(r => r.id === id)?.name ?? '-';
-// attendeeIds: Long[] (서버 응답의 booking.attendeeIds)
-export const resolveAttendees = (attendeeIds) => {
-  if (!attendeeIds?.length) return '';
-  return attendeeIds.map(id => userMap.value[id] || `#${id}`).join(', ');
+// attendeeIds: Long[], externalAttendeeNames: String[] (서버 응답)
+export const resolveAttendees = (attendeeIds, externalAttendeeNames = []) => {
+  const internal = (attendeeIds ?? []).map(id => userMap.value[id] || `#${id}`);
+  const external = externalAttendeeNames ?? [];
+  const all = [...internal, ...external];
+  return all.length ? all.join(', ') : '';
 };
 
 export const filterBookings     = (roomId, date) =>

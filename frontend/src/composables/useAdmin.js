@@ -104,7 +104,6 @@ const doFullReset = async () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
   sessionStorage.removeItem('adminAuth');
-  sessionStorage.removeItem('kioskAuth');
   router.push('/');
 };
 

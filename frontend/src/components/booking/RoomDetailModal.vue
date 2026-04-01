@@ -28,7 +28,7 @@
             <p class="text-[11px] font-bold uppercase tracking-wider text-red-400 mb-2">현재 진행 중</p>
             <p class="text-[16px] font-black text-slate-100">{{ selectedRoomCurrent.title }}</p>
             <p class="text-[13px] text-slate-400 mt-1">주최: {{ selectedRoomCurrent.organizer }}</p>
-            <p v-if="selectedRoomCurrent.attendeeIds?.length" class="text-[13px] text-slate-400 mt-0.5">참석: {{ resolveAttendees(selectedRoomCurrent.attendeeIds) }}</p>
+            <p v-if="selectedRoomCurrent.attendeeIds?.length || selectedRoomCurrent.externalAttendeeNames?.length" class="text-[13px] text-slate-400 mt-0.5">참석: {{ resolveAttendees(selectedRoomCurrent.attendeeIds, selectedRoomCurrent.externalAttendeeNames) }}</p>
             <p class="text-[13px] text-slate-500 mt-1">
               {{ dayjs(selectedRoomCurrent.startTime).format('HH:mm') }} – {{ dayjs(selectedRoomCurrent.endTime).format('HH:mm') }}
             </p>

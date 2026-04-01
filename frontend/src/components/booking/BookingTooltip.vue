@@ -46,14 +46,14 @@
       </p>
 
       <!-- 참석자 -->
-      <p v-if="activeBooking.attendeeIds?.length" class="flex items-center gap-1.5 text-[13px] text-slate-400 mt-1">
+      <p v-if="activeBooking.attendeeIds?.length || activeBooking.externalAttendeeNames?.length" class="flex items-center gap-1.5 text-[13px] text-slate-400 mt-1">
         <svg width="13" height="11" viewBox="0 0 18 14" fill="none" class="flex-shrink-0">
           <circle cx="6" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
           <path d="M0.5 13c0-3 2.5-5.2 5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           <circle cx="12" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
           <path d="M17.5 13c0-3-2.5-5.2-5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
-        {{ resolveAttendees(activeBooking.attendeeIds) }}
+        {{ resolveAttendees(activeBooking.attendeeIds, activeBooking.externalAttendeeNames) }}
       </p>
 
       <!-- 메모 -->
