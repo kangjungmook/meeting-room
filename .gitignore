@@ -1,0 +1,4 @@
+.claude/ 
+meeting-room/src/main/resources/firebase-service-account.json 
+.env 
+node_modules/ 
