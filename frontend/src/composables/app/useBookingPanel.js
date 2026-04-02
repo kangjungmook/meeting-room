@@ -39,6 +39,7 @@ export const doCancel      = async () => {
   try {
     await api.patch(`/bookings/${cancelTarget.value.id}`);
     fetchBookings();
+    fetchMyBookings();
     cancelTarget.value = null;
   } catch (e) {
     const msg = e.response?.data;

@@ -8,9 +8,15 @@ export const rooms    = ref([]);
 export const bookings = ref([]);
 export const userMap  = ref({}); // userId(Long) → name (참석자 표시용)
 
+// ── 로딩 상태 ─────────────────────────────────────────────────
+export const isLoadingBookings   = ref(false);
+export const isLoadingMyBookings = ref(false);
+
 // ── 내 예약 ───────────────────────────────────────────────────
 export const myBookings         = ref([]);
-export const myBookingsToday    = computed(() => myBookings.value.filter(b => dayjs(b.startTime).isSame(dayjs(), 'day')));
+export const myBookingsToday    = computed(() => myBookings.value.filter(b =>
+  dayjs(b.startTime).isSame(dayjs(), 'day') && !dayjs(b.endTime).isBefore(dayjs())
+));
 export const myBookingsThisWeek = computed(() => myBookings.value.filter(b => {
   const d = dayjs(b.startTime);
   return !d.isSame(dayjs(), 'day') && d.isSame(dayjs(), 'week');
@@ -33,6 +39,7 @@ export const fetchBookings = async () => {
   if (_fetchController) _fetchController.abort();
   _fetchController = new AbortController();
 
+  isLoadingBookings.value = true;
   const unit  = viewMode.value === 'month' ? 'month' : viewMode.value === 'week' ? 'week' : 'day';
   const start = targetDate.value.startOf(unit).format('YYYY-MM-DD');
   const end   = targetDate.value.endOf(unit).format('YYYY-MM-DD');
@@ -44,12 +51,19 @@ export const fetchBookings = async () => {
   } catch (e) {
     if (e.code === 'ERR_CANCELED') return;
     console.error(e);
+  } finally {
+    isLoadingBookings.value = false;
   }
 };
 
 export const fetchMyBookings = async () => {
+  isLoadingMyBookings.value = true;
   try {
     const res = await api.get('/bookings/my');
     myBookings.value = res.data;
-  } catch (e) { console.error(e); }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    isLoadingMyBookings.value = false;
+  }
 };

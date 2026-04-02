@@ -13,7 +13,8 @@
       <!-- Content -->
       <main class="flex-1 overflow-hidden relative">
         <Transition :name="'slide-' + slideDir">
-          <div :key="viewMode" class="absolute inset-0 overflow-auto p-3 custom-scrollbar flex flex-col gap-4">
+          <div :key="viewMode" class="absolute inset-0 overflow-auto p-3 custom-scrollbar flex flex-col gap-4"
+               :class="isMobile ? 'pb-44' : 'pb-4'">
             <CalendarDay   v-if="viewMode === 'day'"   />
             <CalendarWeek  v-if="viewMode === 'week'"  />
             <CalendarMonth v-if="viewMode === 'month'" />
@@ -33,21 +34,29 @@
       </div>
       <BookingModal v-if="showModal" :key="modalKey" :rooms="rooms" :targetDate="targetDate" :bookings="bookings"
                     :initialData="modalInit" :editBooking="editBooking"
-                    @close="closeModal" @refresh="fetchBookings" />
+                    @close="closeModal" @refresh="() => { fetchBookings(); fetchMyBookings(); }" />
     </div>
 
     <!-- ── 모바일 바텀 시트 ── -->
-    <div v-if="isMobile && showModal" class="fixed inset-0 z-50 flex flex-col justify-end">
-      <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="closeModal"></div>
-      <div class="relative bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl flex flex-col" style="max-height:95dvh;min-height:70dvh;">
-        <div class="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div class="w-10 h-1 rounded-full bg-slate-200"></div>
+    <template v-if="isMobile && showModal">
+      <!-- 백드롭 -->
+      <div ref="backdropRef" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm" @click="closeModal"></div>
+      <!-- 시트 -->
+      <div ref="sheetRef"
+           class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl flex flex-col overflow-x-hidden"
+           style="max-height: min(90svh, 90vh); min-height: min(65svh, 65vh); touch-action: pan-y; will-change: transform;">
+        <!-- 드래그 핸들 -->
+        <div class="flex justify-center pt-3 pb-1 flex-shrink-0 cursor-grab active:cursor-grabbing"
+             @touchstart.passive="onSheetTouchStart"
+             @touchmove.passive="onSheetTouchMove"
+             @touchend.passive="onSheetTouchEnd">
+          <div class="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-gray-600"></div>
         </div>
         <BookingModal :key="modalKey" :rooms="rooms" :targetDate="targetDate" :bookings="bookings"
                       :initialData="modalInit" :editBooking="editBooking"
-                      @close="closeModal" @refresh="fetchBookings" />
+                      @close="closeModal" @refresh="() => { fetchBookings(); fetchMyBookings(); }" />
       </div>
-    </div>
+    </template>
 
     <!-- ── 모바일 하단 새 예약 버튼 ── -->
     <div v-if="isMobile && !showModal && !showDrawer" class="fixed bottom-6 right-6 z-40">
@@ -294,7 +303,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, nextTick } from 'vue';
+import { onMounted, onUnmounted, nextTick, watch, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 import { useApp } from './composables/useApp';
@@ -324,10 +333,69 @@ const {
   openEditModal, confirmCancel,
   rooms, bookings, targetDate,
   currentUser, showUserSettings,
-  fetchRooms, fetchBookings, connectSse, disconnectSse,
+  fetchRooms, fetchBookings, fetchMyBookings, connectSse, disconnectSse,
   initFcm, scrollDayView, viewMode, userMap,
   toastDuration, userNotifPrefs, applyNotifPrefs,
 } = useApp();
+
+// 모바일 모달 열릴 때 body 스크롤 잠금 (배경 캘린더 고정)
+watch(() => isMobile.value && showModal.value, (locked) => {
+  document.body.style.overflow = locked ? 'hidden' : '';
+});
+
+// ── 바텀시트 스와이프 다운 닫기 ────────────────────────────────
+const sheetRef    = ref(null);
+const backdropRef = ref(null);
+let _swipeStartY  = 0;
+let _swipeDeltaY  = 0;
+const CLOSE_THRESHOLD = 120;
+
+const onSheetTouchStart = (e) => {
+  _swipeStartY = e.touches[0].clientY;
+  _swipeDeltaY = 0;
+  if (sheetRef.value)    sheetRef.value.style.transition    = 'none';
+  if (backdropRef.value) backdropRef.value.style.transition = 'none';
+};
+
+const onSheetTouchMove = (e) => {
+  const dy = e.touches[0].clientY - _swipeStartY;
+  if (dy <= 0) return; // 위로 드래그 무시
+  _swipeDeltaY = dy;
+
+  // 시트 이동
+  if (sheetRef.value)
+    sheetRef.value.style.transform = `translateY(${dy}px)`;
+
+  // 백드롭 드래그 비율만큼 페이드 (0px→0%, 120px→100% 사라짐)
+  if (backdropRef.value) {
+    const ratio   = Math.min(dy / CLOSE_THRESHOLD, 1);
+    backdropRef.value.style.opacity = String(1 - ratio);
+  }
+};
+
+const onSheetTouchEnd = () => {
+  if (!sheetRef.value) return;
+  if (_swipeDeltaY > CLOSE_THRESHOLD) {
+    // 임계값 초과 → 시트+백드롭 동시에 사라지고 닫기
+    const t = 'transform 0.25s ease, opacity 0.25s ease';
+    sheetRef.value.style.transition    = t;
+    sheetRef.value.style.transform     = 'translateY(100%)';
+    if (backdropRef.value) {
+      backdropRef.value.style.transition = 'opacity 0.25s ease';
+      backdropRef.value.style.opacity    = '0';
+    }
+    setTimeout(() => closeModal(), 240);
+  } else {
+    // 임계값 미만 → 시트+백드롭 원위치 복귀
+    const t = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
+    sheetRef.value.style.transition    = t;
+    sheetRef.value.style.transform     = 'translateY(0)';
+    if (backdropRef.value) {
+      backdropRef.value.style.transition = 'opacity 0.3s ease';
+      backdropRef.value.style.opacity    = '1';
+    }
+  }
+};
 
 const logout = async () => {
   try { await api.post('/auth/logout'); } catch {}

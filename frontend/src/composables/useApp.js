@@ -79,6 +79,7 @@ import {
 import {
   rooms, bookings, userMap, myBookings, myBookingsToday, myBookingsThisWeek,
   myBookingsUpcoming, fetchRooms, fetchBookings as _fetchBookings, fetchMyBookings,
+  isLoadingBookings, isLoadingMyBookings,
 } from './app/useBookingData';
 import {
   getRoomColor, getRoomName, resolveAttendees, filterBookings, getBookingsForDate,
@@ -148,6 +149,8 @@ export function useApp() {
     connectSse, disconnectSse,
     // fetch
     fetchRooms, fetchBookings: _fetchBookings,
+    // 로딩 상태
+    isLoadingBookings, isLoadingMyBookings,
     // 사용자 알림 설정
     userNotifPrefs, showUserSettings, saveNotifPrefs, applyNotifPrefs,
     // 다크 모드

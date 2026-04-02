@@ -28,7 +28,8 @@ export const sortBookings = (list) => [...list].sort((a, b) => {
   return 0;
 });
 
-export const canEditOrCancel = (b) => isAdmin || b.userId === currentUser.id;
+export const canEditOrCancel = (b) =>
+  !dayjs(b.endTime).isBefore(dayjs()) && (isAdmin || b.userId === currentUser.id);
 export const chipMinutes     = (s, e) => dayjs(e).diff(dayjs(s), 'minute');
 
 // ── 오늘 현황 ─────────────────────────────────────────────────

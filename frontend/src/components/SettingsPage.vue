@@ -71,7 +71,7 @@
                   <p class="w-24 text-[12px] font-semibold text-gray-400 dark:text-gray-500 flex-shrink-0">권한</p>
                   <span :class="currentUser.role === 'ADMIN' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
                         class="text-[12px] font-semibold px-2.5 py-1 rounded-full">
-                    {{ currentUser.role === 'ADMIN' ? '관리자' : '일반 사용자' }}
+                    {{ currentUser.role === 'ADMIN' ? '관리자' : '사용자' }}
                   </span>
                 </div>
                 <!-- 화면 테마 -->

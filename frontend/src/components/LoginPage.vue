@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen bg-white flex items-center justify-center p-6">
-    <div class="w-full max-w-[360px] flex flex-col gap-7">
+  <div class="min-h-screen bg-white flex items-center justify-center px-5 py-4 sm:p-6">
+    <div class="w-full max-w-[360px] flex flex-col gap-4 sm:gap-7">
 
         <!-- 브랜드 -->
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-11 h-11 rounded-[14px] bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
-            <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
+        <div class="flex flex-col items-center gap-2 sm:gap-3">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-[12px] sm:rounded-[14px] bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/>
               <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/>
               <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/>
@@ -13,8 +13,8 @@
             </svg>
           </div>
           <div class="text-center">
-            <h1 class="text-[22px] font-bold text-gray-900 tracking-tight">회의실 예약 시스템</h1>
-            <p class="text-[14px] text-gray-400 mt-1">{{ mode === 'login' ? '계정에 로그인하세요' : '새 계정을 만드세요' }}</p>
+            <h1 class="text-[18px] sm:text-[22px] font-bold text-gray-900 tracking-tight">회의실 예약 시스템</h1>
+            <p class="hidden sm:block text-[14px] text-gray-400 mt-1">{{ mode === 'login' ? '계정에 로그인하세요' : '새 계정을 만드세요' }}</p>
           </div>
         </div>
 

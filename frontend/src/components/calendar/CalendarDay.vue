@@ -12,7 +12,7 @@
         <!-- 헤더 -->
         <div class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 flex items-center"
              :style="{ height: HEADER_H + 'px' }">
-          <span class="text-[11.5px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">회의실</span>
+          <span class="text-[11.5px] font-bold text-gray-500 dark:text-gray-500 uppercase tracking-wider">회의실</span>
         </div>
 
         <!-- 회의실 행 -->
@@ -26,7 +26,7 @@
             </span>
             <div class="min-w-0 flex-1">
               <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 truncate leading-tight">{{ room.name }}</p>
-              <p class="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
+              <p class="text-[12px] text-gray-500 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
             </div>
           </div>
         </div>
@@ -42,12 +42,12 @@
             <div v-for="h in hours" :key="h"
                  class="absolute top-0 bottom-0 flex items-center pointer-events-none"
                  :style="{ left: ((h - 6) / HOUR_COUNT * 100) + '%' }">
-              <span class="text-[12px] font-semibold text-gray-400 dark:text-gray-500 pl-2 whitespace-nowrap select-none">
+              <span class="text-[12px] font-semibold text-gray-600 dark:text-gray-500 pl-2 whitespace-nowrap select-none">
                 {{ String(h).padStart(2, '0') }}:00
               </span>
             </div>
             <div class="absolute top-0 bottom-0 right-0 flex items-center pointer-events-none">
-              <span class="text-[12px] font-semibold text-gray-400 dark:text-gray-500 pr-2 select-none">21:00</span>
+              <span class="text-[12px] font-semibold text-gray-600 dark:text-gray-500 pr-2 select-none">21:00</span>
             </div>
           </div>
 
@@ -84,16 +84,33 @@
 
             <!-- 예약 블록 -->
             <template v-for="b in filterBookings(room.id, targetDate)" :key="b.id">
-              <div class="absolute rounded-md cursor-pointer overflow-hidden z-10 transition-all hover:shadow-md hover:brightness-105"
+              <div class="absolute rounded-xl cursor-pointer overflow-hidden z-10 transition-all duration-150 hover:scale-[1.02] hover:z-20 hover:shadow-lg"
                    :style="calcGanttPos(b, room.colorCode)"
                    @mouseenter="showTooltip(b, $event)"
                    @mouseleave="!tooltip.pinned && (tooltip.show = false)"
                    @click.stop="pinTooltip(b, $event)">
-                <div class="h-full flex flex-col justify-center px-3 overflow-hidden">
-                  <p class="text-[13px] font-bold text-white truncate leading-tight">{{ b.title }}</p>
+                <!-- 배경 -->
+                <div class="absolute inset-0"
+                     :style="{ background: `linear-gradient(135deg, ${room.colorCode} 0%, ${room.colorCode}cc 100%)` }">
+                </div>
+                <!-- 어둡게 오버레이 (글씨 가독성 보조) -->
+                <div class="absolute inset-0 bg-black/10"></div>
+                <!-- 왼쪽 진한 액센트 바 -->
+                <div class="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-black/20">
+                </div>
+                <!-- 내용 -->
+                <div class="relative h-full flex flex-col justify-center pl-3 pr-2 overflow-hidden">
+                  <p class="text-[12.5px] font-black text-white truncate leading-tight"
+                     style="text-shadow: 0 1px 3px rgba(0,0,0,0.4)">{{ b.title }}</p>
                   <p v-if="chipMinutes(b.startTime, b.endTime) >= 30"
-                     class="text-[11.5px] text-white/90 truncate mt-0.5">
-                    {{ dayjs(b.startTime).format('HH:mm') }}–{{ dayjs(b.endTime).format('HH:mm') }}
+                     class="text-[10.5px] text-white/90 truncate mt-0.5 tabular-nums"
+                     style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">
+                    {{ dayjs(b.startTime).format('HH:mm') }} – {{ dayjs(b.endTime).format('HH:mm') }}
+                  </p>
+                  <p v-if="chipMinutes(b.startTime, b.endTime) >= 60 && b.organizer"
+                     class="text-[10px] text-white/80 truncate mt-0.5"
+                     style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">
+                    {{ b.organizer }}
                   </p>
                 </div>
               </div>
@@ -108,20 +125,30 @@
 
   <!-- ── 일정 목록 ── -->
   <div>
-    <div class="flex items-center justify-between mb-3 px-1 flex-wrap gap-2">
+    <div class="flex items-center justify-between mb-3 px-1">
       <div class="flex items-center gap-2">
-        <p class="text-[14px] font-semibold text-gray-700 dark:text-gray-200">
+        <p class="text-[14px] font-bold text-gray-700 dark:text-gray-200">
           {{ targetDate.isSame(dayjs(), 'day') ? '오늘 일정' : targetDate.format('MM월 DD일') + ' 일정' }}
         </p>
-        <span class="text-[12.5px] font-medium text-gray-400">{{ getBookingsForDate(targetDate).length }}건</span>
+        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full"
+              :class="getBookingsForDate(targetDate).length > 0
+                ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
+                : 'bg-gray-100 text-gray-400 dark:bg-gray-800'">
+          {{ getBookingsForDate(targetDate).length }}건
+        </span>
       </div>
       <SortBar />
     </div>
-    <div v-if="getBookingsForDate(targetDate).length === 0"
-         class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 px-6 py-10 text-center text-gray-300 dark:text-gray-600 text-[13.5px] font-medium">
-      예약된 일정이 없습니다
+    <SkeletonBookingList v-if="isLoadingBookings && getBookingsForDate(targetDate).length === 0" :count="3" />
+    <div v-else-if="getBookingsForDate(targetDate).length === 0"
+         class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 px-6 py-12 text-center">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="mx-auto mb-3 text-gray-200 dark:text-gray-700">
+        <rect x="2" y="5" width="28" height="24" rx="4" stroke="currentColor" stroke-width="2"/>
+        <path d="M10 2v6M22 2v6M2 13h28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <p class="text-[13px] font-medium text-gray-300 dark:text-gray-600">예약된 일정이 없습니다</p>
     </div>
-    <div v-else class="grid grid-cols-1 gap-2.5">
+    <div v-else class="flex flex-col gap-2.5">
       <BookingListItem v-for="b in sortBookings(getBookingsForDate(targetDate))" :key="b.id" :booking="b" />
     </div>
   </div>
@@ -133,13 +160,14 @@ import { useApp } from '../../composables/useApp';
 import dayjs from 'dayjs';
 import SortBar from './SortBar.vue';
 import BookingListItem from './BookingListItem.vue';
+import SkeletonBookingList from './SkeletonBookingList.vue';
 
 const {
   rooms, targetDate, hours, isMobile,
   isRoomInUse, filterBookings, chipMinutes,
   tooltip, showTooltip, pinTooltip, openQuickModal,
   getBookingsForDate, sortBookings,
-  liveNow,
+  liveNow, isLoadingBookings,
 } = useApp();
 
 // ── 레이아웃 상수 ─────────────────────────────────────────────
@@ -148,7 +176,7 @@ const ROW_H       = computed(() => isMobile.value ? 88  : 116);
 const HEADER_H    = 48;
 const HOUR_START  = 6;
 const HOUR_COUNT  = hours.length; // 15 (06~20)
-const MIN_TRACK_W = computed(() => isMobile.value ? 1100 : 2000);
+const MIN_TRACK_W = computed(() => isMobile.value ? 1800 : 2600);
 
 // ── 현재 시간 세로선 % ─────────────────────────────────────────
 const nowLinePct = computed(() => {
@@ -176,12 +204,10 @@ const calcGanttPos = (b, color) => {
   const st = dayjs(b.startTime).hour() + dayjs(b.startTime).minute() / 60;
   const en = dayjs(b.endTime).hour()   + dayjs(b.endTime).minute()   / 60;
   return {
-    top:        '14px',
-    bottom:     '14px',
-    left:       `${Math.max(0, (st - HOUR_START) / HOUR_COUNT * 100)}%`,
-    width:      `${Math.max(0.5, (en - st) / HOUR_COUNT * 100)}%`,
-    background: color,
-    opacity:    '0.9',
+    top:    '10px',
+    bottom: '10px',
+    left:   `calc(${Math.max(0, (st - HOUR_START) / HOUR_COUNT * 100)}% + 2px)`,
+    width:  `calc(${Math.max(0.5, (en - st) / HOUR_COUNT * 100)}% - 4px)`,
   };
 };
 </script>
