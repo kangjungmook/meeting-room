@@ -1,4 +1,19 @@
-.claude/ 
-meeting-room/src/main/resources/firebase-service-account.json 
-.env 
-node_modules/ 
+.claude/
+meeting-room/src/main/resources/firebase-service-account.json
+meeting-room/src/main/resources/application-local.yml
+meeting-room/src/main/resources/application.yml
+.env
+node_modules/
+
+# 빌드 산출물
+frontend/dist/
+meeting-room/build/
+meeting-room/.gradle/
+meeting-room/bin/
+*.class
+*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/

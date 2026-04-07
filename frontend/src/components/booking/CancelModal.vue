@@ -23,9 +23,9 @@
                 class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 text-[14px] font-bold transition-all">
           돌아가기
         </button>
-        <button @click="doCancel"
-                class="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[14px] font-bold transition-all">
-          삭제
+        <button @click="doCancel" :disabled="isCancelling"
+                class="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[14px] font-bold transition-all">
+          {{ isCancelling ? '취소 중...' : '삭제' }}
         </button>
       </div>
     </div>
@@ -35,5 +35,5 @@
 <script setup>
 import { useApp } from '../../composables/useApp';
 
-const { cancelTarget, cancelError, doCancel } = useApp();
+const { cancelTarget, cancelError, isCancelling, doCancel } = useApp();
 </script>

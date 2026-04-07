@@ -4,7 +4,8 @@ const api = axios.create({
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  timeout: 10000,
 });
 
 // 요청마다 토큰 자동 첨부
@@ -45,6 +46,8 @@ api.interceptors.response.use(
       return Promise.reject(err);
     }
     const originalRequest = err.config;
+    // 타임아웃 또는 네트워크 에러는 재시도 없이 즉시 반환
+    if (err.code === 'ECONNABORTED' || !err.response) return Promise.reject(err);
     // 로그인 요청의 403은 거절된 계정 응답이므로 인터셉터가 처리하지 않음
     if (originalRequest.url?.includes('/auth/')) return Promise.reject(err);
     if ((err.response?.status === 401 || err.response?.status === 403) && !originalRequest._retry) {
@@ -65,7 +68,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
       try {
-        const res = await axios.post('/api/auth/refresh', { refreshToken });
+        const res = await axios.post('/api/auth/refresh', { refreshToken }, { timeout: 10000 });
         const newToken = res.data.token;
         localStorage.setItem('token', newToken);
         processQueue(null, newToken);

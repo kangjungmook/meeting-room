@@ -106,8 +106,8 @@ public class AdminController {
 
     // 비밀번호 직접 설정
     @PatchMapping("/users/{id}/password")
-    public ResponseEntity<?> setUserPassword(@PathVariable Long id, @RequestParam String password) {
-        adminService.setUserPassword(id, password);
+    public ResponseEntity<?> setUserPassword(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        adminService.setUserPassword(id, body.get("password"));
         return ResponseEntity.ok().build();
     }
 
@@ -134,8 +134,8 @@ public class AdminController {
     // 비밀번호 초기화
     @PatchMapping("/users/{id}/reset-password")
     public ResponseEntity<?> resetPassword(@PathVariable Long id) {
-        adminService.resetPassword(id);
-        return ResponseEntity.ok().build();
+        String tempPw = adminService.resetPassword(id);
+        return ResponseEntity.ok(Map.of("tempPassword", tempPw));
     }
 
     // 유저 승인

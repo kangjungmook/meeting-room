@@ -74,11 +74,11 @@ import {
   viewMode as _viewMode, targetDate as _targetDate, modes, modeOrder as _modeOrder,
   slideDir as _slideDir, hours, isMobile, sidebarCollapsed, showDrawer,
   weekDays, dateLabel, monthCells, expandedCells, sortBy, sortOptions,
-  toggleExpand, isExpanded,
+  toggleExpand, isExpanded, searchQuery,
 } from './app/useCalendar';
 import {
   rooms, bookings, userMap, myBookings, myBookingsToday, myBookingsThisWeek,
-  myBookingsUpcoming, fetchRooms, fetchBookings as _fetchBookings, fetchMyBookings,
+  myBookingsUpcoming, myBookingsPast, fetchRooms, fetchBookings as _fetchBookings, fetchMyBookings,
   isLoadingBookings, isLoadingMyBookings,
 } from './app/useBookingData';
 import {
@@ -91,7 +91,7 @@ import {
 import {
   showModal, panelWidth, resizing, modalKey, modalInit, editBooking,
   startResize, onResizeMove, onResizeEnd, closeModal, openEditModal, openQuickModal,
-  cancelTarget, cancelError, confirmCancel, doCancel,
+  cancelTarget, cancelError, isCancelling, confirmCancel, doCancel,
   showMyBookings, openMyBookings,
   tooltip, detailTarget, popoverStyle, showTooltip, pinTooltip, openDetail,
 } from './app/useBookingPanel';
@@ -110,7 +110,7 @@ export function useApp() {
     // 캘린더 네비게이션
     viewMode: _viewMode, targetDate: _targetDate, modes, modeOrder: _modeOrder,
     slideDir: _slideDir, weekDays, dateLabel, monthCells, hours,
-    expandedCells, sortBy, sortOptions, toggleExpand, isExpanded,
+    expandedCells, sortBy, sortOptions, toggleExpand, isExpanded, searchQuery,
     // UI 상태
     isMobile, sidebarCollapsed, showDrawer,
     // 시계
@@ -122,10 +122,10 @@ export function useApp() {
     closeModal, openEditModal, openQuickModal,
     startResize, onResizeMove, onResizeEnd,
     // 취소
-    cancelTarget, cancelError, confirmCancel, doCancel,
+    cancelTarget, cancelError, isCancelling, confirmCancel, doCancel,
     // 내 예약
     showMyBookings, myBookings,
-    myBookingsToday, myBookingsThisWeek, myBookingsUpcoming,
+    myBookingsToday, myBookingsThisWeek, myBookingsUpcoming, myBookingsPast,
     fetchMyBookings, openMyBookings,
     // 툴팁 / 상세
     tooltip, detailTarget, popoverStyle, showTooltip, pinTooltip, openDetail,

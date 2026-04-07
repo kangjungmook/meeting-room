@@ -62,6 +62,11 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresLogin && !token) return { path: '/' };
   if (to.meta.requiresAdmin && !sessionStorage.getItem('adminAuth')) return { path: '/' };
 
+  // 비밀번호 변경 강제: change-password 외 모든 페이지 차단
+  if (sessionStorage.getItem('passwordResetRequired') === 'true' && to.path !== '/change-password') {
+    return { path: '/change-password' };
+  }
+
   return true;
 });
 

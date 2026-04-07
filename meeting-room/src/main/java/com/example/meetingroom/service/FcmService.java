@@ -26,6 +26,7 @@ public class FcmService {
 
     /** 단일 토큰으로 알림 전송 */
     public void send(String token, String title, String body) {
+        if (com.google.firebase.FirebaseApp.getApps().isEmpty()) return;
         NotificationSetting setting = notificationSettingRepository.findById(1L).orElse(null);
         if (setting != null && Boolean.FALSE.equals(setting.getEnabled())) return;
         if (token == null || token.isBlank()) return;

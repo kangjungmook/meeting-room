@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -303,18 +304,29 @@ public class AdminService {
                 Map.of("status", "APPROVED"));
     }
 
+    private static final String PW_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    private String generateTempPassword() {
+        StringBuilder sb = new StringBuilder(8);
+        for (int i = 0; i < 8; i++) sb.append(PW_CHARS.charAt(SECURE_RANDOM.nextInt(PW_CHARS.length())));
+        return sb.toString();
+    }
+
     @Transactional
-    public void resetPassword(Long id) {
+    public String resetPassword(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
-        user.setPassword(passwordEncoder.encode("1111"));
+        String tempPw = generateTempPassword();
+        user.setPassword(passwordEncoder.encode(tempPw));
         user.setPasswordResetRequired(true);
         adminLogService.log("PASSWORD_RESET",
                 user.getName() + "(" + user.getEmployeeId() + ") 비밀번호 초기화",
                 Map.of("name", user.getName(), "employeeId", user.getEmployeeId()),
                 id, "USER",
                 Map.of("passwordResetRequired", false),
-                Map.of("passwordResetRequired", true, "resetTo", "1111"));
+                Map.of("passwordResetRequired", true));
+        return tempPw;
     }
 
     @Transactional
@@ -380,7 +392,7 @@ public class AdminService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
         user.setPassword(passwordEncoder.encode(password));
-        user.setPasswordResetRequired(false);
+        user.setPasswordResetRequired(true);
         adminLogService.log("PASSWORD_SET",
                 user.getName() + "(" + user.getEmployeeId() + ") 비밀번호 직접 설정",
                 Map.of("name", user.getName(), "employeeId", user.getEmployeeId()), id, "USER");
@@ -396,7 +408,7 @@ public class AdminService {
                 Map.of("name", user.getName(), "employeeId", user.getEmployeeId()), id, "USER");
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void broadcastNotification(String title, String body) {
         userRepository.findAll().stream()
             .filter(u -> u.getFcmToken() != null && !u.getFcmToken().isBlank())

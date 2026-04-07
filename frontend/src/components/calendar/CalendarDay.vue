@@ -43,12 +43,21 @@
                  class="absolute top-0 bottom-0 flex items-center pointer-events-none"
                  :style="{ left: ((h - 6) / HOUR_COUNT * 100) + '%' }">
               <span class="text-[12px] font-semibold text-gray-600 dark:text-gray-500 pl-2 whitespace-nowrap select-none">
-                {{ String(h).padStart(2, '0') }}:00
+                {{ h }}:00
               </span>
             </div>
             <div class="absolute top-0 bottom-0 right-0 flex items-center pointer-events-none">
               <span class="text-[12px] font-semibold text-gray-600 dark:text-gray-500 pr-2 select-none">21:00</span>
             </div>
+            <!-- 현재 시각 배지 (헤더-룸 경계선에 걸쳐 고정) -->
+            <template v-if="targetDate.isSame(dayjs(), 'day')">
+              <div class="absolute bottom-0 translate-y-1/2 z-30 pointer-events-none -translate-x-1/2"
+                   :style="{ left: nowLinePct }">
+                <div class="bg-red-500 text-white text-[10px] font-bold px-2 py-[3px] rounded-full shadow-md leading-none whitespace-nowrap tabular-nums">
+                  {{ liveNow.format('HH:mm') }}
+                </div>
+              </div>
+            </template>
           </div>
 
           <!-- 회의실별 타임 트랙 행 -->
@@ -61,30 +70,20 @@
             <!-- 시간 격자선 -->
             <div v-for="h in hours" :key="h"
                  class="absolute top-0 bottom-0 border-l pointer-events-none"
-                 :class="h % 2 === 0 ? 'border-gray-100 dark:border-gray-800' : 'border-gray-50 dark:border-gray-800/50'"
+                 :class="h % 2 === 0 ? 'border-gray-200 dark:border-gray-700' : 'border-gray-100 dark:border-gray-800'"
                  :style="{ left: ((h - 6) / HOUR_COUNT * 100) + '%' }">
             </div>
 
             <!-- 현재 시간 세로선 -->
             <template v-if="targetDate.isSame(dayjs(), 'day')">
-              <div class="absolute top-0 bottom-0 w-px bg-red-400/60 z-10 pointer-events-none"
+              <div class="absolute top-0 bottom-0 w-px bg-red-400/80 z-10 pointer-events-none"
                    :style="{ left: nowLinePct }">
-              </div>
-              <div v-if="ri === 0"
-                   class="absolute z-20 pointer-events-none -translate-x-1/2"
-                   :style="{ left: nowLinePct, top: '0px' }">
-                <div class="flex flex-col items-center">
-                  <div class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-md leading-none whitespace-nowrap tabular-nums">
-                    {{ liveNow.format('HH:mm') }}
-                  </div>
-                  <div class="w-1.5 h-1.5 rounded-full bg-red-500 mt-0.5"></div>
-                </div>
               </div>
             </template>
 
             <!-- 예약 블록 -->
             <template v-for="b in filterBookings(room.id, targetDate)" :key="b.id">
-              <div class="absolute rounded-xl cursor-pointer overflow-hidden z-10 transition-all duration-150 hover:scale-[1.02] hover:z-20 hover:shadow-lg"
+              <div class="absolute rounded-xl cursor-pointer overflow-hidden z-20 transition-all duration-150 hover:scale-[1.02] hover:z-20 hover:shadow-lg"
                    :style="calcGanttPos(b, room.colorCode)"
                    @mouseenter="showTooltip(b, $event)"
                    @mouseleave="!tooltip.pinned && (tooltip.show = false)"
@@ -99,7 +98,7 @@
                 <div class="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-black/20">
                 </div>
                 <!-- 내용 -->
-                <div class="relative h-full flex flex-col justify-center pl-3 pr-2 overflow-hidden">
+                <div class="relative flex flex-col pt-1.5 pl-3 pr-2">
                   <p class="text-[12.5px] font-black text-white truncate leading-tight"
                      style="text-shadow: 0 1px 3px rgba(0,0,0,0.4)">{{ b.title }}</p>
                   <p v-if="chipMinutes(b.startTime, b.endTime) >= 30"
@@ -155,7 +154,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, nextTick } from 'vue';
+import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import { useApp } from '../../composables/useApp';
 import dayjs from 'dayjs';
 import SortBar from './SortBar.vue';
@@ -164,7 +163,7 @@ import SkeletonBookingList from './SkeletonBookingList.vue';
 
 const {
   rooms, targetDate, hours, isMobile,
-  isRoomInUse, filterBookings, chipMinutes,
+  filterBookings, chipMinutes,
   tooltip, showTooltip, pinTooltip, openQuickModal,
   getBookingsForDate, sortBookings,
   liveNow, isLoadingBookings,
@@ -184,20 +183,26 @@ const nowLinePct = computed(() => {
   return `${Math.max(0, Math.min(100, (h - HOUR_START) / HOUR_COUNT * 100))}%`;
 });
 
-// ── 초기 진입 시 현재 시각으로 스크롤 ─────────────────────────
+// ── 현재 시각으로 스크롤 ──────────────────────────────────────
 const scrollTrack = ref(null);
+
+const scrollToNow = () => {
+  if (!scrollTrack.value) return;
+  const h = liveNow.value.hour() + liveNow.value.minute() / 60;
+  const trackW     = MIN_TRACK_W.value;
+  const containerW = scrollTrack.value.clientWidth;
+  const target = (h - HOUR_START) / HOUR_COUNT * trackW - containerW / 2;
+  scrollTrack.value.scrollLeft = Math.max(0, target);
+};
 
 onMounted(async () => {
   await nextTick();
-  if (!scrollTrack.value) return;
-  const now   = dayjs();
-  const h     = now.hour() + now.minute() / 60;
-  const trackW    = MIN_TRACK_W.value;
-  const containerW = scrollTrack.value.clientWidth;
-  // 현재 시각이 화면 중앙에 오도록 배치
-  const scrollTo = (h - HOUR_START) / HOUR_COUNT * trackW - containerW / 2;
-  scrollTrack.value.scrollLeft = Math.max(0, scrollTo);
+  scrollToNow();
 });
+
+// 1분마다 현재 시각으로 자동 스크롤 (빨간 선이 항상 화면 중앙에 유지)
+const currentMinute = computed(() => liveNow.value.format('HHmm'));
+watch(currentMinute, scrollToNow);
 
 // ── 예약 블록 위치 (헤더 레이블과 동일한 % 공식) ────────────────
 const calcGanttPos = (b, color) => {

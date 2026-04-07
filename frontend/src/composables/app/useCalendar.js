@@ -8,16 +8,17 @@ dayjs.locale('ko');
 export const viewMode   = ref('day');
 export const targetDate = ref(dayjs());
 export const modes      = [
-  { name: '일간', val: 'day'   },
-  { name: '주간', val: 'week'  },
-  { name: '월간', val: 'month' },
+  { name: '일', val: 'day'   },
+  { name: '주', val: 'week'  },
+  { name: '월', val: 'month' },
 ];
+export const searchQuery = ref('');
 export const modeOrder = ['day', 'week', 'month'];
 export const slideDir  = ref('left');
 export const hours     = Array.from({ length: 15 }, (_, i) => i + 6); // 6~20시
 
 // ── UI 상태 ───────────────────────────────────────────────────
-export const isMobile         = ref(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+export const isMobile         = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 export const sidebarCollapsed = ref(false);
 export const showDrawer       = ref(false);
 

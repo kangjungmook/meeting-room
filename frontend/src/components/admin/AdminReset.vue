@@ -156,10 +156,10 @@
         <div class="flex gap-3 px-7 pb-7">
           <button @click="resetModal.show = false"
             class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all">취소</button>
-          <button @click="doReset"
-            class="flex-1 py-3 rounded-xl text-white text-[14px] font-bold transition-all"
+          <button @click="doReset" :disabled="isResetting"
+            class="flex-1 py-3 rounded-xl text-white text-[14px] font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             :class="resetModal.target === 'notif' ? 'bg-indigo-500 hover:bg-indigo-600' : 'bg-red-500 hover:bg-red-600'">
-            {{ resetModal.target === 'notif' ? '복원' : '초기화' }}
+            {{ isResetting ? '처리 중...' : (resetModal.target === 'notif' ? '복원' : '초기화') }}
           </button>
         </div>
       </div>
@@ -214,8 +214,10 @@
         <div class="flex gap-3 px-6 pb-6">
           <button @click="fullResetModal.show = false; fullResetModal.confirmText = ''"
             class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all">취소</button>
-          <button @click="submitFullReset" :disabled="fullResetModal.confirmText !== '전체초기화'"
-            class="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-30 disabled:cursor-not-allowed text-white text-[14px] font-black transition-all">전체 초기화</button>
+          <button @click="submitFullReset" :disabled="fullResetModal.confirmText !== '전체초기화' || isResetting"
+            class="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-30 disabled:cursor-not-allowed text-white text-[14px] font-black transition-all">
+            {{ isResetting ? '처리 중...' : '전체 초기화' }}
+          </button>
         </div>
       </div>
     </div>
@@ -224,8 +226,9 @@
 </template>
 
 <script setup>
-import { reactive, computed } from 'vue';
+import { reactive, computed, ref } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
+import { showAdminToast } from '../../composables/admin/useAdminToast';
 
 const {
   allBookings, logs, users, notifSetting,
@@ -234,6 +237,7 @@ const {
 
 const nonAdminCount = computed(() => users.value.filter(u => u.role !== 'ADMIN').length);
 
+const isResetting    = ref(false);
 const resetModal     = reactive({ show: false, target: '' });
 const fullResetModal = reactive({ show: false, confirmText: '' });
 
@@ -250,21 +254,34 @@ const confirmReset = (target) => {
 };
 
 const doReset = async () => {
+  if (isResetting.value) return;
+  isResetting.value = true;
   try {
     if (resetModal.target === 'bookings') await resetBookings();
     else if (resetModal.target === 'logs')  await resetLogs();
     else if (resetModal.target === 'users') await resetUsers();
     else if (resetModal.target === 'notif') await resetNotifSetting();
     resetModal.show = false;
-  } catch { alert('초기화 중 오류가 발생했습니다.'); }
+    showAdminToast('초기화가 완료되었습니다.');
+  } catch {
+    showAdminToast('초기화 중 오류가 발생했습니다.', 'error');
+  } finally {
+    isResetting.value = false;
+  }
 };
 
 const submitFullReset = async () => {
-  if (fullResetModal.confirmText !== '전체초기화') return;
+  if (fullResetModal.confirmText !== '전체초기화' || isResetting.value) return;
+  isResetting.value = true;
   try {
     await doFullReset();
     fullResetModal.show        = false;
     fullResetModal.confirmText = '';
-  } catch { alert('초기화 중 오류가 발생했습니다.'); }
+    showAdminToast('전체 초기화가 완료되었습니다.');
+  } catch {
+    showAdminToast('초기화 중 오류가 발생했습니다.', 'error');
+  } finally {
+    isResetting.value = false;
+  }
 };
 </script>

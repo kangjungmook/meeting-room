@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-[width] duration-200 overflow-visible z-10"
+    class="flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-[width] duration-200 overflow-visible z-20"
     :style="sidebarCollapsed ? 'width:60px' : 'width:232px'"
   >
 
@@ -35,7 +35,7 @@
               <path d="M5.5 1.5v4M12.5 1.5v4M1.5 8h15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
           </button>
-          <div class="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
+          <div class="pointer-events-none absolute left-full inset-y-0 flex items-center pl-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
             <div class="bg-gray-900 dark:bg-gray-700 text-white text-[12px] font-semibold px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">예약 현황</div>
           </div>
         </div>
@@ -50,7 +50,7 @@
               <path d="M2 16c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
           </button>
-          <div class="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
+          <div class="pointer-events-none absolute left-full inset-y-0 flex items-center pl-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
             <div class="bg-gray-900 dark:bg-gray-700 text-white text-[12px] font-semibold px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">내 회의</div>
           </div>
         </div>
@@ -65,7 +65,7 @@
               <path d="M14.5 9c0-.4 0-.8-.1-1.2l1.7-1.3-1.5-2.6-2 .8a6 6 0 0 0-2.1-1.2L10 1.5H7.5l-.5 2A6 6 0 0 0 4.9 4.7l-2-.8L1.4 6.5l1.7 1.3A6 6 0 0 0 3 9c0 .4 0 .8.1 1.2L1.4 11.5l1.5 2.6 2-.8a6 6 0 0 0 2.1 1.2l.5 2H10l.5-2a6 6 0 0 0 2.1-1.2l2 .8 1.5-2.6-1.7-1.3c.1-.4.1-.8.1-1.2z" stroke="currentColor" stroke-width="1.5"/>
             </svg>
           </button>
-          <div class="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
+          <div class="pointer-events-none absolute left-full inset-y-0 flex items-center pl-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
             <div class="bg-gray-900 dark:bg-gray-700 text-white text-[12px] font-semibold px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">설정</div>
           </div>
         </div>

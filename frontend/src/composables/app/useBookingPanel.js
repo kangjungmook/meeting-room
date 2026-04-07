@@ -31,11 +31,14 @@ export const openQuickModal = (roomId, h, date) => {
 };
 
 // ── 예약 취소 ─────────────────────────────────────────────────
-export const cancelTarget  = ref(null);
-export const cancelError   = ref('');
-export const confirmCancel = (b) => { cancelTarget.value = b; };
-export const doCancel      = async () => {
+export const cancelTarget    = ref(null);
+export const cancelError     = ref('');
+export const isCancelling    = ref(false);
+export const confirmCancel   = (b) => { cancelTarget.value = b; };
+export const doCancel        = async () => {
+  if (isCancelling.value) return;
   cancelError.value = '';
+  isCancelling.value = true;
   try {
     await api.patch(`/bookings/${cancelTarget.value.id}`);
     fetchBookings();
@@ -44,6 +47,8 @@ export const doCancel      = async () => {
   } catch (e) {
     const msg = e.response?.data;
     cancelError.value = typeof msg === 'string' ? msg : '취소에 실패했습니다.';
+  } finally {
+    isCancelling.value = false;
   }
 };
 

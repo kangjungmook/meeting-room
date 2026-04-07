@@ -144,6 +144,7 @@
             <input v-model="createAdminModal.form.password" type="password" required placeholder="4자 이상"
               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-400" />
           </div>
+          <p v-if="createAdminModal.error" class="text-[12px] font-semibold text-red-500 -mt-1">{{ createAdminModal.error }}</p>
           <div class="flex gap-3 pt-1">
             <button type="button" @click="createAdminModal.show = false"
               class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all">취소</button>
@@ -160,11 +161,12 @@
 <script setup>
 import { reactive } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
+import { showAdminToast } from '../../composables/admin/useAdminToast';
 
 const { notifSetting, adminUsers, currentUser, changeRole, createUser, saveSystemSetting, dayjs } = useAdmin();
 
 const createAdminModal = reactive({
-  show: false,
+  show: false, error: '',
   form: { employeeId: '', name: '', password: '', role: 'ADMIN', status: 'APPROVED' },
 });
 
@@ -174,12 +176,14 @@ const openCreateAdmin = () => {
 };
 
 const submitCreateAdmin = async () => {
+  if (createAdminModal.form.password.length < 4) { createAdminModal.error = '비밀번호는 4자 이상이어야 합니다.'; return; }
+  createAdminModal.error = '';
   try {
-    if (createAdminModal.form.password.length < 4) { alert('비밀번호는 4자 이상이어야 합니다.'); return; }
     await createUser(createAdminModal.form);
     createAdminModal.show = false;
+    showAdminToast('관리자 계정이 생성되었습니다.');
   } catch (e) {
-    alert(e.response?.data?.message || '생성 중 오류가 발생했습니다.');
+    createAdminModal.error = e.response?.data?.message || '생성 중 오류가 발생했습니다.';
   }
 };
 </script>

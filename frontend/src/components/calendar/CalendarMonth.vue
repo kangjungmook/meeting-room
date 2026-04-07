@@ -123,6 +123,9 @@ const {
 } = useApp();
 
 const monthBookings = computed(() =>
-  bookings.value.filter(b => b.status !== 'cancelled' && dayjs(b.startTime).isSame(targetDate.value, 'month'))
+  monthCells.value
+    .filter(c => c.isCurrentMonth)
+    .flatMap(c => getBookingsForDate(c.date))
+    .filter((b, i, arr) => arr.findIndex(x => x.id === b.id) === i)
 );
 </script>

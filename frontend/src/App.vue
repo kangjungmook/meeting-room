@@ -405,13 +405,12 @@ const logout = async () => {
 };
 
 onMounted(async () => {
-  window.addEventListener('resize', () => { isMobile.value = window.innerWidth < 640; });
+  window.addEventListener('resize', () => { isMobile.value = window.innerWidth < 768; });
   window.addEventListener('mousemove', onResizeMove);
   window.addEventListener('mouseup', onResizeEnd);
   await fetchRooms();
   fetchBookings();
   connectSse();
-  const { default: api } = await import('./api');
   api.get('/users').then(res => {
     const map = {};
     res.data.forEach(u => { map[u.id] = u.name; });

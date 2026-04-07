@@ -165,11 +165,14 @@
             <input v-model="editModal.form.attendeeIdsStr" type="text" placeholder="예) 2,3,5"
               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-[14px] text-slate-700 outline-none focus:ring-2 focus:ring-indigo-400" />
           </div>
+          <p v-if="editModal.error" class="text-[12px] font-semibold text-red-500 -mt-1">{{ editModal.error }}</p>
           <div class="flex gap-3 pt-1">
             <button type="button" @click="editModal.show = false"
               class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all">취소</button>
-            <button type="submit"
-              class="flex-[2] py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[14px] font-bold transition-all">수정 완료</button>
+            <button type="submit" :disabled="isSubmitting"
+              class="flex-[2] py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[14px] font-bold transition-all">
+              {{ isSubmitting ? '수정 중...' : '수정 완료' }}
+            </button>
           </div>
         </form>
       </div>
@@ -178,8 +181,9 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
+import { showAdminToast } from '../../composables/admin/useAdminToast';
 
 const {
   allRooms, filteredBookings, bookingFilter, bookingSort,
@@ -195,8 +199,9 @@ const sortOptions = [
   { key: 'title',     label: '제목' },
 ];
 
+const isSubmitting = ref(false);
 const editModal = reactive({
-  show: false,
+  show: false, error: '',
   form: { id: null, roomId: null, title: '', startTime: '', endTime: '', description: '', attendeeIdsStr: '', organizer: '' },
 });
 
@@ -213,6 +218,9 @@ const openEdit = (b) => {
 };
 
 const submitEdit = async () => {
+  if (isSubmitting.value) return;
+  isSubmitting.value = true;
+  editModal.error = '';
   try {
     const f = editModal.form;
     await updateBooking(f.id, {
@@ -223,8 +231,11 @@ const submitEdit = async () => {
       organizer: f.organizer,
     });
     editModal.show = false;
+    showAdminToast('예약이 수정되었습니다.');
   } catch (e) {
-    alert('수정 중 오류: ' + (e.response?.data?.message || e.message));
+    editModal.error = e.response?.data || e.message || '수정 중 오류가 발생했습니다.';
+  } finally {
+    isSubmitting.value = false;
   }
 };
 </script>

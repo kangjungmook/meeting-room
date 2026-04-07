@@ -3,8 +3,6 @@ package com.example.meetingroom.controller;
 import com.example.meetingroom.common.config.JwtUtil;
 import com.example.meetingroom.domain.Booking;
 import com.example.meetingroom.dto.BookingRequestDto;
-import com.example.meetingroom.repository.UserRepository;
-import com.example.meetingroom.service.AdminLogService;
 import com.example.meetingroom.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -25,8 +22,6 @@ import java.util.Map;
 public class BookingController {
 
     private final BookingService bookingService;
-    private final AdminLogService adminLogService;
-    private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
     @GetMapping
@@ -47,18 +42,11 @@ public class BookingController {
         if (userId == null) return ResponseEntity.status(401).build();
         try {
             Booking savedBooking = bookingService.createBooking(dto, userId);
-            adminLogService.log("BOOKING_CREATE", "예약 등록: " + dto.getTitle(),
-                    Map.of("title",     dto.getTitle(),
-                           "organizer", dto.getOrganizer() != null ? dto.getOrganizer() : "",
-                           "roomId",    dto.getRoomId(),
-                           "startTime", dto.getStartTime().toString(),
-                           "endTime",   dto.getEndTime().toString()),
-                    savedBooking.getId(), "BOOKING");
             return ResponseEntity.ok(savedBooking);
         } catch (IllegalStateException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
         }
     }
 
@@ -69,14 +57,11 @@ public class BookingController {
         String role = resolveRole();
         try {
             bookingService.cancelBooking(id, userId, role);
-            adminLogService.log("BOOKING_CANCEL", "예약 취소 ID: " + id,
-                    Map.of("bookingId", id),
-                    id, "BOOKING");
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
         }
     }
 
@@ -89,17 +74,11 @@ public class BookingController {
         String role = resolveRole();
         try {
             Booking updated = bookingService.updateBooking(id, dto, userId, role);
-            adminLogService.log("BOOKING_UPDATE", "예약 수정: " + dto.getTitle(),
-                    Map.of("title",     dto.getTitle(),
-                           "roomId",    dto.getRoomId(),
-                           "startTime", dto.getStartTime().toString(),
-                           "endTime",   dto.getEndTime().toString()),
-                    id, "BOOKING");
             return ResponseEntity.ok(updated);
         } catch (IllegalStateException | IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
         }
     }
 
@@ -111,11 +90,32 @@ public class BookingController {
     }
 
     @PatchMapping("/{id}/end")
-    public ResponseEntity<?> endBooking(@PathVariable Long id) {
-        bookingService.endBookingNow(id);
-        adminLogService.log("BOOKING_END", "예약 조기 종료 ID: " + id,
-                Map.of("bookingId", id));
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> endBooking(@PathVariable Long id, HttpServletRequest request) {
+        Long userId = resolveUserId(request);
+        if (userId == null) return ResponseEntity.status(401).build();
+        String role = resolveRole();
+        try {
+            bookingService.endBookingNow(id, userId, role);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    // 키오스크 전용 — 인증 없이 roomId로 소속 검증 후 종료
+    @PatchMapping("/{id}/end-kiosk")
+    public ResponseEntity<?> endBookingKiosk(@PathVariable Long id,
+                                             @RequestParam Long roomId) {
+        try {
+            bookingService.endBookingNowKiosk(id, roomId);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
+        }
     }
 
     // JWT에서 userId 추출 (Authorization 헤더)

@@ -115,13 +115,13 @@ import { useAdmin } from '../../composables/useAdmin';
 
 const {
   dashboard, activeBookings, todayBookings, recentActivity,
-  pendingCount, activeTab, manageUserFilter,
+  pendingCount, activeTab, adminLiveNow,
   getRoomName, getRoomColor, logBadgeStyle, actionLabel, dayjs,
 } = useAdmin();
 
 const upcomingToday = computed(() =>
   todayBookings.value
-    .filter(b => dayjs(b.startTime).isAfter(dayjs()))
+    .filter(b => dayjs(b.startTime).isAfter(adminLiveNow.value))
     .sort((a, b) => dayjs(a.startTime).diff(dayjs(b.startTime)))
 );
 
@@ -152,7 +152,7 @@ const metricCards = computed(() => [
     icon: pendingCount.value
       ? '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="4" stroke="#f59e0b" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round"/></svg>'
       : '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="4" stroke="#94a3b8" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/></svg>',
-    onClick: () => { manageUserFilter.value = 'PENDING'; activeTab.value = 'user-manage'; },
+    onClick: () => { activeTab.value = 'users-pending'; },
   },
   {
     label: '전체 회원',
@@ -161,7 +161,7 @@ const metricCards = computed(() => [
     valueClass: 'text-slate-700',
     iconBg: 'bg-violet-50',
     icon: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="7" cy="5" r="3" stroke="#7c3aed" stroke-width="1.6"/><path d="M1 16c0-3.3 2.7-6 6-6" stroke="#7c3aed" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="7" r="2.5" stroke="#7c3aed" stroke-width="1.4"/><path d="M10 16c0-2.2 1.3-4 3-4s3 1.8 3 4" stroke="#7c3aed" stroke-width="1.4" stroke-linecap="round"/></svg>',
-    onClick: () => { activeTab.value = 'user-manage'; },
+    onClick: () => { activeTab.value = 'users-all'; },
   },
 ]);
 </script>

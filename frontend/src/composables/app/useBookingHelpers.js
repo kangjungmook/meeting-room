@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue';
 import dayjs from 'dayjs';
 import { rooms, bookings, userMap } from './useBookingData';
-import { sortBy, targetDate } from './useCalendar';
+import { sortBy, targetDate, searchQuery } from './useCalendar';
 import { liveNow } from './useRealtime';
 import { isAdmin, currentUser } from './useAuth';
 
@@ -16,15 +16,23 @@ export const resolveAttendees = (attendeeIds, externalAttendeeNames = []) => {
   return all.length ? all.join(', ') : '';
 };
 
+const matchesSearch = (b) => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return true;
+  return (b.title ?? '').toLowerCase().includes(q)
+    || getRoomName(b.roomId).toLowerCase().includes(q)
+    || (b.organizer ?? '').toLowerCase().includes(q);
+};
+
 export const filterBookings     = (roomId, date) =>
-  bookings.value.filter(b => b.roomId === roomId && dayjs(b.startTime).isSame(date, 'day') && b.status !== 'cancelled');
+  bookings.value.filter(b => b.roomId === roomId && dayjs(b.startTime).isSame(date, 'day') && b.status !== 'CANCELLED' && matchesSearch(b));
 export const getBookingsForDate = (date) =>
-  bookings.value.filter(b => dayjs(b.startTime).isSame(date, 'day') && b.status !== 'cancelled');
+  bookings.value.filter(b => dayjs(b.startTime).isSame(date, 'day') && b.status !== 'CANCELLED' && matchesSearch(b));
 
 export const sortBookings = (list) => [...list].sort((a, b) => {
   if (sortBy.value === 'time')      return dayjs(a.startTime).diff(dayjs(b.startTime));
   if (sortBy.value === 'room')      return getRoomName(a.roomId).localeCompare(getRoomName(b.roomId));
-  if (sortBy.value === 'organizer') return a.organizer.localeCompare(b.organizer);
+  if (sortBy.value === 'organizer') return (a.organizer ?? '').localeCompare(b.organizer ?? '');
   return 0;
 });
 
@@ -34,11 +42,11 @@ export const chipMinutes     = (s, e) => dayjs(e).diff(dayjs(s), 'minute');
 
 // ── 오늘 현황 ─────────────────────────────────────────────────
 export const todayBookingCount  = computed(() =>
-  bookings.value.filter(b => b.status !== 'cancelled' && dayjs(b.startTime).isSame(liveNow.value, 'day')).length
+  bookings.value.filter(b => b.status !== 'CANCELLED' && dayjs(b.startTime).isSame(liveNow.value, 'day')).length
 );
 export const isRoomInUse = (roomId) =>
   bookings.value.some(b =>
-    b.roomId === roomId && b.status !== 'cancelled' &&
+    b.roomId === roomId && b.status !== 'CANCELLED' &&
     dayjs(b.startTime).isBefore(liveNow.value) && dayjs(b.endTime).isAfter(liveNow.value)
   );
 export const currentlyUsedCount = computed(() => rooms.value.filter(r => isRoomInUse(r.id)).length);
@@ -49,7 +57,7 @@ export const selectedRoomBookings = computed(() => {
   if (!selectedRoom.value) return [];
   const today = dayjs().format('YYYY-MM-DD');
   return bookings.value
-    .filter(b => b.roomId === selectedRoom.value.id && b.status !== 'cancelled' && dayjs(b.startTime).format('YYYY-MM-DD') === today)
+    .filter(b => b.roomId === selectedRoom.value.id && b.status !== 'CANCELLED' && dayjs(b.startTime).format('YYYY-MM-DD') === today)
     .sort((a, b) => dayjs(a.startTime).valueOf() - dayjs(b.startTime).valueOf());
 });
 export const selectedRoomCurrent = computed(() =>

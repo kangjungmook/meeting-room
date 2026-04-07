@@ -2,8 +2,11 @@ package com.example.meetingroom.repository;
 
 import com.example.meetingroom.domain.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import jakarta.persistence.LockModeType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +23,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to);
 
-    // 중복 예약 확인 쿼리
+    // 중복 예약 확인 쿼리 (비관적 잠금 — 동시 요청 시 선행 트랜잭션이 커밋될 때까지 대기)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT b FROM Booking b WHERE b.roomId = :roomId " +
             "AND b.status != 'CANCELLED' " +
             "AND b.startTime < :endTime AND b.endTime > :startTime")
@@ -30,7 +34,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("endTime") LocalDateTime endTime
     );
 
-    // 수정 시 자기 자신 제외한 중복 체크
+    // 수정 시 자기 자신 제외한 중복 체크 (비관적 잠금)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT b FROM Booking b WHERE b.roomId = :roomId AND b.id != :excludeId " +
             "AND b.status != 'CANCELLED' " +
             "AND b.startTime < :endTime AND b.endTime > :startTime")

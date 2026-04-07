@@ -215,7 +215,7 @@ const toggleDetail = (id) => {
 const resolveOperator = (operatorId) => {
   if (!operatorId) return '-';
   const u = users.value.find(u => u.id === operatorId);
-  return u ? `${u.name} (${u.employeeId})` : `ID ${operatorId}`;
+  return u ? `${u.name} (${u.employeeId})` : '(삭제된 관리자)';
 };
 
 // HTTP 메서드 색상

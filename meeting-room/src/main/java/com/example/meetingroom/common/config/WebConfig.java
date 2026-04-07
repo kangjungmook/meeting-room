@@ -11,13 +11,13 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                         "http://localhost:5173",
-                        "https://localhost:5173",
+                        "http://192.168.152.1:5173",
                         "http://192.168.1.115:5173",
-                        "http://192.168.1.115.nip.io:5173",
-                        "https://192.168.1.121:5173",
-                        "https://192.168.1.116:5173/"
+                        "http://192.168.1.123.nip.io:5173",
+                        "https://192.168.1.123.nip.io:5173/"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
     }
 }
+
 

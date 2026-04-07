@@ -226,8 +226,11 @@ const submitLogin = async () => {
     }
 
     if (res.data.passwordResetRequired) {
+      sessionStorage.setItem('passwordResetRequired', 'true');
       router.push('/change-password');
       return;
+    } else {
+      sessionStorage.removeItem('passwordResetRequired');
     }
 
     const b64 = res.data.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');

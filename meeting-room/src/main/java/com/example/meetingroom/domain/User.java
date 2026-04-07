@@ -1,5 +1,6 @@
 package com.example.meetingroom.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class User {
     @Column(name = "employee_id", unique = true, nullable = false)
     private String employeeId;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -37,12 +39,15 @@ public class User {
     @Builder.Default
     private Boolean passwordResetRequired = false;
 
+    @JsonIgnore
     @Column(name = "refresh_token")
     private String refreshToken;
 
+    @JsonIgnore
     @Column(name = "refresh_token_expiry")
     private java.time.LocalDateTime refreshTokenExpiry;
 
+    @JsonIgnore
     @Column(name = "fcm_token", columnDefinition = "TEXT")
     private String fcmToken;
 

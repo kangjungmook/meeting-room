@@ -8,6 +8,7 @@ import com.example.meetingroom.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -56,7 +57,7 @@ public class BookingService {
     }
 
     // ── 예약 생성 ──────────────────────────────────────────────
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Booking createBooking(BookingRequestDto dto, Long userId) {
         if (dto.getStartTime().isAfter(dto.getEndTime()) || dto.getStartTime().isEqual(dto.getEndTime())) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 이후여야 합니다.");
@@ -92,22 +93,30 @@ public class BookingService {
 
         Map<String, Object> createdData = Map.of(
                 "id", saved.getId(), "title", saved.getTitle(),
-                "organizer", saved.getOrganizer(), "roomId", saved.getRoomId());
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override public void afterCommit() { sseService.broadcast("CREATED", createdData); }
-        });
+                "organizer", saved.getOrganizer() != null ? saved.getOrganizer() : "",
+                "roomId", saved.getRoomId());
 
-        String timeStr = saved.getStartTime().format(DateTimeFormatter.ofPattern("MM/dd HH:mm"));
-        fcmService.sendToAttendeesExcluding(
-                saved.getAttendeeIds(), userId,
-                "📅 회의 초대: " + saved.getTitle(),
-                saved.getOrganizer() + "님이 초대했습니다 · " + timeStr,
-                "INVITATION");
+        // FCM 전송에 필요한 값을 트랜잭션 커밋 전에 캡처
+        final List<Long> fcmAttendees = saved.getAttendeeIds() != null
+                ? List.copyOf(saved.getAttendeeIds()) : List.of();
+        final Long creatorId = userId;
+        final String fcmTitle = "📅 회의 초대: " + saved.getTitle();
+        final String fcmBody  = (saved.getOrganizer() != null ? saved.getOrganizer() : "")
+                + "님이 초대했습니다 · "
+                + saved.getStartTime().format(DateTimeFormatter.ofPattern("MM/dd HH:mm"));
+
+        // SSE + FCM 모두 커밋 이후에 실행 — DB 잠금이 먼저 해제됨
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                sseService.broadcast("CREATED", createdData);
+                fcmService.sendToAttendeesExcluding(fcmAttendees, creatorId, fcmTitle, fcmBody, "INVITATION");
+            }
+        });
         return saved;
     }
 
     // ── 예약 수정 ──────────────────────────────────────────────
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Booking updateBooking(Long id, BookingRequestDto dto, Long userId, String role) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다."));
@@ -153,17 +162,23 @@ public class BookingService {
 
         Map<String, Object> updatedData = Map.of(
                 "id", updated.getId(), "title", updated.getTitle(),
-                "organizer", updated.getOrganizer(), "roomId", updated.getRoomId());
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override public void afterCommit() { sseService.broadcast("UPDATED", updatedData); }
-        });
+                "organizer", updated.getOrganizer() != null ? updated.getOrganizer() : "",
+                "roomId", updated.getRoomId());
 
-        String timeStr = updated.getStartTime().format(DateTimeFormatter.ofPattern("MM/dd HH:mm"));
-        fcmService.sendToAttendeesExcluding(
-                updated.getAttendeeIds(), userId,
-                "✏️ 회의 수정: " + updated.getTitle(),
-                updated.getOrganizer() + "님이 일정을 변경했습니다 · " + timeStr,
-                "BOOKING_UPDATED");
+        final List<Long> fcmAttendees = updated.getAttendeeIds() != null
+                ? List.copyOf(updated.getAttendeeIds()) : List.of();
+        final Long editorId = userId;
+        final String fcmTitle = "✏️ 회의 수정: " + updated.getTitle();
+        final String fcmBody  = (updated.getOrganizer() != null ? updated.getOrganizer() : "")
+                + "님이 일정을 변경했습니다 · "
+                + updated.getStartTime().format(DateTimeFormatter.ofPattern("MM/dd HH:mm"));
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                sseService.broadcast("UPDATED", updatedData);
+                fcmService.sendToAttendeesExcluding(fcmAttendees, editorId, fcmTitle, fcmBody, "BOOKING_UPDATED");
+            }
+        });
         return updated;
     }
 
@@ -198,11 +213,34 @@ public class BookingService {
         });
     }
 
+    // ── 키오스크 예약 즉시 종료 (인증 없음, roomId로 소속 검증) ──
+    @Transactional
+    public void endBookingNowKiosk(Long id, Long roomId) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
+        if (!roomId.equals(booking.getRoomId())) {
+            throw new IllegalArgumentException("해당 회의실의 예약이 아닙니다.");
+        }
+        Map<String, Object> before = Map.of("endTime", booking.getEndTime().toString());
+        booking.setEndTime(LocalDateTime.now());
+        bookingRepository.save(booking);
+        adminLogService.log("BOOKING_END",
+                "키오스크 조기 종료: " + booking.getTitle(),
+                null, id, "BOOKING",
+                before, Map.of("endTime", booking.getEndTime().toString()));
+    }
+
     // ── 예약 즉시 종료 ─────────────────────────────────────────
     @Transactional
-    public void endBookingNow(Long id) {
+    public void endBookingNow(Long id, Long requestUserId, String role) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다."));
+
+        boolean isAdmin = "ADMIN".equals(role);
+        boolean isOwner = booking.getUserId() != null && booking.getUserId().equals(requestUserId);
+        if (!isAdmin && !isOwner) {
+            throw new IllegalArgumentException("본인의 예약만 종료할 수 있습니다.");
+        }
 
         Map<String, Object> before = Map.of("endTime", booking.getEndTime().toString());
         booking.setEndTime(LocalDateTime.now());

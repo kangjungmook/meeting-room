@@ -64,6 +64,7 @@ public class AuthController {
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody java.util.Map<String, String> body,
                                             org.springframework.security.core.Authentication auth) {
+        if (auth == null) return ResponseEntity.status(401).build();
         try {
             authService.changePassword(auth.getName(), body.get("newPassword"));
             return ResponseEntity.ok().build();

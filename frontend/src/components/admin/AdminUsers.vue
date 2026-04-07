@@ -1,50 +1,53 @@
 <template>
   <div class="flex flex-col gap-4">
 
-    <!-- 상단 툴바: 필터 탭 + 액션 -->
-    <div class="flex items-center gap-3 flex-wrap">
-      <div class="flex bg-white border border-slate-200 rounded-2xl p-1 gap-1">
-        <button v-for="mt in manageTabs" :key="mt.key" @click="manageUserFilter = mt.key"
-          :class="['flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13px] font-bold transition-all',
-            manageUserFilter === mt.key ? mt.activeClass : 'text-slate-500 hover:bg-slate-50']">
-          {{ mt.label }}
-          <span :class="['min-w-[18px] h-5 px-1.5 rounded-full text-[11px] font-bold flex items-center justify-center',
-            manageUserFilter === mt.key ? mt.badgeActive : 'bg-slate-100 text-slate-500',
-            mt.key === 'PENDING' && mt.count > 0 && manageUserFilter !== 'PENDING' ? 'bg-amber-100 text-amber-600 animate-pulse' : '']">
-            {{ mt.count }}
-          </span>
-        </button>
-      </div>
-
-      <template v-if="manageUserFilter === 'PENDING'">
-        <div class="flex items-center gap-2 text-[13px] text-slate-700">
-          <input type="checkbox" :checked="allChecked" @change="toggleAll"
-            class="w-4 h-4 rounded accent-indigo-500 cursor-pointer" />
-          <span>{{ selectedIds.length > 0 ? `${selectedIds.length}명 선택됨` : '전체 선택' }}</span>
+    <!-- 통계 카드 -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div v-for="card in statCards" :key="card.label"
+        class="bg-white rounded-2xl border border-slate-100 px-4 py-3.5 flex items-center gap-3 hover:border-slate-200 hover:shadow-sm transition-all">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" :class="card.iconBg">
+          <span v-html="card.icon"></span>
         </div>
-        <button @click="bulkApprove" :disabled="filteredUsers.length === 0"
-          class="px-3.5 py-2 rounded-xl text-[13px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-40 border border-emerald-200/60 transition-all">
-          {{ selectedIds.length > 0 ? '선택 승인' : '전체 승인' }}
+        <div>
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">{{ card.label }}</p>
+          <p class="text-[26px] font-black leading-none" :class="card.valueClass">{{ card.value }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 검색 + 액션 바 -->
+    <div class="flex items-center gap-3 flex-wrap">
+      <!-- 검색 -->
+      <div class="relative flex-1 min-w-[180px]">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 10l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input v-model="searchKeyword" type="text" placeholder="이름 또는 사번 검색..."
+          class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-[13px] text-slate-700 outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-slate-400" />
+      </div>
+      <span class="text-[12px] text-slate-400 font-semibold whitespace-nowrap">{{ displayUsers.length }}명</span>
+
+      <!-- 대기 탭: 선택 시 일괄 처리 -->
+      <template v-if="effectiveFilter === 'PENDING' && selectedIds.length > 0">
+        <span class="text-[13px] text-slate-500 font-semibold">{{ selectedIds.length }}명 선택됨</span>
+        <button @click="bulkApprove"
+          class="px-3.5 py-2 rounded-xl text-[13px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 transition-all">
+          선택 승인
         </button>
-        <button @click="bulkReject" :disabled="filteredUsers.length === 0"
-          class="px-3.5 py-2 rounded-xl text-[13px] font-bold text-red-500 bg-red-50 hover:bg-red-100 disabled:opacity-40 border border-red-200/60 transition-all">
-          {{ selectedIds.length > 0 ? '선택 거절' : '전체 거절' }}
+        <button @click="bulkReject"
+          class="px-3.5 py-2 rounded-xl text-[13px] font-bold text-red-500 bg-red-50 hover:bg-red-100 border border-red-200/60 transition-all">
+          선택 거절
         </button>
       </template>
 
-      <div class="ml-auto flex items-center gap-2">
-        <div v-if="manageUserFilter !== 'PENDING'" class="flex items-center gap-2 text-[13px] text-slate-700">
-          <input type="checkbox" :checked="allChecked" @change="toggleAll"
-            class="w-4 h-4 rounded accent-indigo-500 cursor-pointer" />
-          <span>{{ selectedIds.length > 0 ? `${selectedIds.length}명 선택됨` : '전체 선택' }}</span>
-        </div>
-        <button @click="openCreateModal()"
-          class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition-all">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          유저 생성
-        </button>
-      </div>
+      <button @click="openCreateModal()"
+        class="ml-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition-all">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        유저 생성
+      </button>
     </div>
+
 
     <!-- 데스크탑 테이블 -->
     <div v-if="!isMobile" class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -63,15 +66,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="filteredUsers.length === 0">
+            <tr v-if="displayUsers.length === 0">
               <td colspan="8" class="py-16 text-center">
                 <div class="flex flex-col items-center gap-2">
                   <svg width="40" height="40" viewBox="0 0 40 40" fill="none" class="text-slate-200"><circle cx="18" cy="12" r="7" stroke="currentColor" stroke-width="2"/><path d="M4 36c0-7.7 6.3-14 14-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M28 24l8 8M36 24l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                  <p class="text-[14px] font-semibold text-slate-400">{{ manageUserFilter === 'PENDING' ? '승인 대기중인 회원이 없습니다' : '해당 회원이 없습니다' }}</p>
+                  <p class="text-[14px] font-semibold text-slate-400">{{ effectiveFilter === 'PENDING' ? '승인 대기중인 회원이 없습니다' : '해당 회원이 없습니다' }}</p>
                 </div>
               </td>
             </tr>
-            <tr v-for="u in filteredUsers" :key="u.id"
+            <tr v-for="u in displayUsers" :key="u.id"
               :class="['border-b border-slate-50 transition-colors group', selectedIds.includes(u.id) ? 'bg-indigo-50/40' : 'hover:bg-indigo-50/20']">
               <td class="px-5 py-3">
                 <input type="checkbox" :checked="selectedIds.includes(u.id)" @change="toggleSelect(u.id)"
@@ -101,10 +104,10 @@
               <td class="px-5 py-3 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <template v-if="u.status === 'APPROVED'">
-                    <button @click="resetUserPassword(u)"
+                    <button @click="openSetPasswordModal(u)"
                       class="px-3 py-1.5 rounded-lg text-[12px] font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 transition-all">비번 초기화</button>
                     <div class="relative">
-                      <button @click.stop="menuOpen = menuOpen === u.id ? null : u.id"
+                      <button @click.stop="setMenuOpen(u.id, $event)"
                         :class="['flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-all',
                           menuOpen === u.id ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50']">
                         관리
@@ -112,31 +115,30 @@
                           <path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                       </button>
-                      <div v-if="menuOpen === u.id"
-                        class="absolute right-0 bottom-full mb-1.5 w-40 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden py-1">
-                        <button @click="openSetPasswordModal(u); menuOpen = null"
-                          class="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] font-semibold text-indigo-500 hover:bg-indigo-50 transition-colors">
-                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="6" width="11" height="6.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6V4a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                          비번 변경
-                        </button>
-                        <button @click="changeRole(u); menuOpen = null"
-                          :class="['flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] font-semibold transition-colors',
-                            u.role === 'ADMIN' ? 'text-slate-500 hover:bg-slate-50' : 'text-violet-500 hover:bg-violet-50']">
-                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M1 12c0-3 2.5-5 5.5-5M10 8l1.5 1.5L14 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                          {{ u.role === 'ADMIN' ? '권한 해제' : '관리자 설정' }}
-                        </button>
-                        <button v-if="u.fcmToken" @click="clearFcmToken(u); menuOpen = null"
-                          class="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
-                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1a4 4 0 0 1 4 4c0 2 .4 2.8.8 3.6H1.7C2.1 7.8 2.5 7 2.5 5a4 4 0 0 1 4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M5 9a1.5 1.5 0 0 0 3 0M9.5 1.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-                          FCM 초기화
-                        </button>
-                        <div class="h-px bg-slate-100 mx-2 my-1"></div>
-                        <button @click="confirmDelete(u); menuOpen = null"
-                          class="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] font-semibold text-red-400 hover:bg-red-50 transition-colors">
-                          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M4.5 3.5V2.5h4v1M4 3.5l.5 7h4l.5-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                          삭제
-                        </button>
-                      </div>
+                      <Teleport to="body">
+                        <div v-if="menuOpen === u.id"
+                          class="fixed w-40 bg-white rounded-xl border border-slate-200 shadow-lg z-[9999] overflow-hidden py-1"
+                          :style="{ top: menuPos.top + 'px', right: menuPos.right + 'px' }"
+                          @click.stop>
+                          <button @click="changeRole(u); menuOpen = null"
+                            :class="['flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] font-semibold transition-colors',
+                              u.role === 'ADMIN' ? 'text-slate-500 hover:bg-slate-50' : 'text-violet-500 hover:bg-violet-50']">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M1 12c0-3 2.5-5 5.5-5M10 8l1.5 1.5L14 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {{ u.role === 'ADMIN' ? '권한 해제' : '관리자 설정' }}
+                          </button>
+                          <button v-if="u.fcmToken" @click="clearFcmToken(u); menuOpen = null"
+                            class="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] font-semibold text-slate-500 hover:bg-slate-50 transition-colors">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1a4 4 0 0 1 4 4c0 2 .4 2.8.8 3.6H1.7C2.1 7.8 2.5 7 2.5 5a4 4 0 0 1 4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M5 9a1.5 1.5 0 0 0 3 0M9.5 1.5l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                            FCM 초기화
+                          </button>
+                          <div class="h-px bg-slate-100 mx-2 my-1"></div>
+                          <button @click="confirmDelete(u); menuOpen = null"
+                            class="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] font-semibold text-red-400 hover:bg-red-50 transition-colors">
+                            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M4.5 3.5V2.5h4v1M4 3.5l.5 7h4l.5-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                            삭제
+                          </button>
+                        </div>
+                      </Teleport>
                     </div>
                   </template>
                   <template v-if="u.status === 'PENDING'">
@@ -163,11 +165,11 @@
 
     <!-- 모바일 카드 -->
     <div v-else class="flex flex-col gap-3">
-      <div v-if="filteredUsers.length === 0" class="bg-white rounded-2xl border border-slate-200 py-12 flex flex-col items-center gap-2">
+      <div v-if="displayUsers.length === 0" class="bg-white rounded-2xl border border-slate-200 py-12 flex flex-col items-center gap-2">
         <svg width="36" height="36" viewBox="0 0 40 40" fill="none" class="text-slate-200"><circle cx="18" cy="12" r="7" stroke="currentColor" stroke-width="2"/><path d="M4 36c0-7.7 6.3-14 14-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M28 24l8 8M36 24l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <p class="text-[14px] font-semibold text-slate-400">{{ manageUserFilter === 'PENDING' ? '승인 대기중인 회원이 없습니다' : '해당 회원이 없습니다' }}</p>
+        <p class="text-[14px] font-semibold text-slate-400">{{ effectiveFilter === 'PENDING' ? '승인 대기중인 회원이 없습니다' : '해당 회원이 없습니다' }}</p>
       </div>
-      <div v-for="u in filteredUsers" :key="u.id"
+      <div v-for="u in displayUsers" :key="u.id"
         :class="['rounded-2xl border p-4 transition-all', selectedIds.includes(u.id) ? 'bg-indigo-50/60 border-indigo-200' : 'bg-white border-slate-200']">
         <div class="flex items-center gap-3 mb-3">
           <input type="checkbox" :checked="selectedIds.includes(u.id)" @change="toggleSelect(u.id)"
@@ -184,9 +186,9 @@
         </div>
         <div class="flex gap-2 pt-3 border-t border-slate-50">
           <template v-if="u.status === 'APPROVED'">
-            <button @click="resetUserPassword(u)" class="flex-1 py-2 rounded-xl text-[13px] font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 transition-all">비번 초기화</button>
+            <button @click="openSetPasswordModal(u)" class="flex-1 py-2 rounded-xl text-[13px] font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 transition-all">비번 초기화</button>
             <div class="relative">
-              <button @click.stop="menuOpen = menuOpen === u.id ? null : u.id"
+              <button @click.stop="setMenuOpen(u.id, $event)"
                 :class="['px-4 py-2 rounded-xl text-[13px] font-semibold border transition-all flex items-center gap-1',
                   menuOpen === u.id ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-white border-slate-200 text-slate-600']">
                 관리
@@ -194,17 +196,20 @@
                   <path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
               </button>
-              <div v-if="menuOpen === u.id"
-                class="absolute right-0 bottom-full mb-1.5 w-40 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden py-1">
-                <button @click="openSetPasswordModal(u); menuOpen = null" class="flex items-center gap-2 w-full px-3.5 py-2.5 text-[13px] font-semibold text-indigo-500 hover:bg-indigo-50">비번 변경</button>
-                <button @click="changeRole(u); menuOpen = null"
-                  :class="['flex items-center gap-2 w-full px-3.5 py-2.5 text-[13px] font-semibold', u.role === 'ADMIN' ? 'text-slate-500 hover:bg-slate-50' : 'text-violet-500 hover:bg-violet-50']">
-                  {{ u.role === 'ADMIN' ? '권한 해제' : '관리자 설정' }}
-                </button>
-                <button v-if="u.fcmToken" @click="clearFcmToken(u); menuOpen = null" class="flex items-center gap-2 w-full px-3.5 py-2.5 text-[13px] font-semibold text-slate-500 hover:bg-slate-50">FCM 초기화</button>
-                <div class="h-px bg-slate-100 mx-2 my-1"></div>
-                <button @click="confirmDelete(u); menuOpen = null" class="flex items-center gap-2 w-full px-3.5 py-2.5 text-[13px] font-semibold text-red-400 hover:bg-red-50">삭제</button>
-              </div>
+              <Teleport to="body">
+                <div v-if="menuOpen === u.id"
+                  class="fixed w-40 bg-white rounded-xl border border-slate-200 shadow-lg z-[9999] overflow-hidden py-1"
+                  :style="{ top: menuPos.top + 'px', right: menuPos.right + 'px' }"
+                  @click.stop>
+                  <button @click="changeRole(u); menuOpen = null"
+                    :class="['flex items-center gap-2 w-full px-3.5 py-2.5 text-[13px] font-semibold', u.role === 'ADMIN' ? 'text-slate-500 hover:bg-slate-50' : 'text-violet-500 hover:bg-violet-50']">
+                    {{ u.role === 'ADMIN' ? '권한 해제' : '관리자 설정' }}
+                  </button>
+                  <button v-if="u.fcmToken" @click="clearFcmToken(u); menuOpen = null" class="flex items-center gap-2 w-full px-3.5 py-2.5 text-[13px] font-semibold text-slate-500 hover:bg-slate-50">FCM 초기화</button>
+                  <div class="h-px bg-slate-100 mx-2 my-1"></div>
+                  <button @click="confirmDelete(u); menuOpen = null" class="flex items-center gap-2 w-full px-3.5 py-2.5 text-[13px] font-semibold text-red-400 hover:bg-red-50">삭제</button>
+                </div>
+              </Teleport>
             </div>
           </template>
           <template v-if="u.status === 'PENDING'">
@@ -218,6 +223,23 @@
             <button @click="approveUser(u)" class="flex-1 py-2 rounded-xl text-[13px] font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all">재승인</button>
             <button @click="confirmDelete(u)" class="flex-1 py-2 rounded-xl text-[13px] font-semibold text-red-400 bg-red-50 hover:bg-red-100 transition-all">삭제</button>
           </template>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 일괄 승인 확인 모달 -->
+    <div v-if="bulkApproveConfirm.show" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div class="px-7 pt-7 pb-5">
+          <h3 class="text-[17px] font-bold text-slate-800">{{ bulkApproveConfirm.targets.length }}명을 승인할까요?</h3>
+          <p class="text-[14px] text-slate-500 mt-1.5">승인된 회원은 즉시 로그인이 가능합니다.</p>
+        </div>
+        <div class="flex gap-3 px-7 pb-7">
+          <button @click="bulkApproveConfirm.show = false"
+            class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all">취소</button>
+          <button @click="doBulkApprove"
+            class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-[14px] font-bold transition-all">승인</button>
         </div>
       </div>
     </div>
@@ -265,6 +287,7 @@
               </select>
             </div>
           </div>
+          <p v-if="createModal.error" class="text-[12px] font-semibold text-red-500 -mt-1">{{ createModal.error }}</p>
           <div class="flex gap-3 pt-1">
             <button type="button" @click="createModal.show = false"
               class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all">취소</button>
@@ -301,6 +324,7 @@
             <p v-if="pwModal.confirm && pwModal.password !== pwModal.confirm"
               class="text-[12px] text-red-400 font-semibold">비밀번호가 일치하지 않습니다</p>
           </div>
+          <p v-if="pwModal.error" class="text-[12px] font-semibold text-red-500 -mt-1">{{ pwModal.error }}</p>
           <div class="flex gap-3 pt-1">
             <button type="button" @click="pwModal.show = false"
               class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[14px] font-bold transition-all">취소</button>
@@ -366,24 +390,86 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, onUnmounted } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
+import { showAdminToast } from '../../composables/admin/useAdminToast';
 
 const {
-  filteredUsers, manageTabs, manageUserFilter,
+  users, currentUser,
   approveUser, rejectUser, resetUserPassword, changeRole, deleteUser, clearFcmToken, createUser, setUserPassword,
   onlineUsers,
   dayjs,
 } = useAdmin();
 
-const props = defineProps({ isMobile: Boolean });
+const props = defineProps({ isMobile: Boolean, filter: String });
+
+// ── props.filter 기반 독립 필터 (v-show 시 4개 인스턴스 충돌 방지) ──
+const effectiveFilter = computed(() => props.filter ?? 'ALL');
+
+const localFilteredUsers = computed(() => {
+  const f  = effectiveFilter.value;
+  const cu = currentUser.employeeId;
+  if (f === 'PENDING')  return users.value.filter(u => u.role !== 'ADMIN' && u.status === 'PENDING');
+  if (f === 'APPROVED') return users.value.filter(u => u.status === 'APPROVED' && u.employeeId !== cu);
+  if (f === 'REJECTED') return users.value.filter(u => u.role !== 'ADMIN' && u.status === 'REJECTED');
+  return users.value.filter(u => u.employeeId !== cu); // ALL
+});
 
 // ── Selection ──
 const selectedIds = ref([]);
-watch(manageUserFilter, () => { selectedIds.value = []; });
 
+// ── 검색 ──
+const searchKeyword = ref('');
+watch(effectiveFilter, () => { selectedIds.value = []; searchKeyword.value = ''; });
+
+const displayUsers = computed(() => {
+  const kw = searchKeyword.value.trim().toLowerCase();
+  if (!kw) return localFilteredUsers.value;
+  return localFilteredUsers.value.filter(u =>
+    u.name.toLowerCase().includes(kw) || u.employeeId.toLowerCase().includes(kw)
+  );
+});
+
+// ── 통계 카드 ──
+const statCards = computed(() => {
+  const base       = users.value.filter(u => u.employeeId !== currentUser.employeeId);
+  const onlineCnt  = base.filter(u => onlineUsers.value.includes(u.employeeId)).length;
+  const pendingCnt = base.filter(u => u.status === 'PENDING' && u.role !== 'ADMIN').length;
+  const approvCnt  = base.filter(u => u.status === 'APPROVED').length;
+  const rejectCnt  = base.filter(u => u.status === 'REJECTED' && u.role !== 'ADMIN').length;
+  const adminCnt   = base.filter(u => u.role === 'ADMIN').length;
+  const fcmCnt     = base.filter(u => u.fcmToken).length;
+
+  if (effectiveFilter.value === 'PENDING') return [
+    { label: '대기 중',  value: pendingCnt, valueClass: pendingCnt ? 'text-amber-500'   : 'text-slate-700', iconBg: pendingCnt ? 'bg-amber-50'   : 'bg-slate-50',   icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#f59e0b" stroke-width="1.6"/><path d="M9 5.5v4l2.5 2.5" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+    { label: '전체 회원', value: base.length, valueClass: 'text-slate-700',             iconBg: 'bg-slate-50',                                                        icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="7" cy="6" r="3" stroke="#64748b" stroke-width="1.6"/><path d="M1 16c0-3.3 2.7-6 6-6" stroke="#64748b" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="7" r="2.5" stroke="#64748b" stroke-width="1.4"/><path d="M11 16c0-2.5 0.9-4.5 2-4.5s2 2 2 4.5" stroke="#64748b" stroke-width="1.4" stroke-linecap="round"/></svg>' },
+    { label: '승인됨',   value: approvCnt,  valueClass: 'text-emerald-600',             iconBg: 'bg-emerald-50',                                                      icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="#10b981" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#10b981" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+    { label: '거절됨',   value: rejectCnt,  valueClass: rejectCnt ? 'text-red-500'     : 'text-slate-400', iconBg: rejectCnt ? 'bg-red-50'     : 'bg-slate-50',    icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="#ef4444" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#ef4444" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+  ];
+  if (effectiveFilter.value === 'APPROVED') return [
+    { label: '승인 회원', value: approvCnt,  valueClass: 'text-emerald-600',            iconBg: 'bg-emerald-50',                                                      icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="#10b981" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#10b981" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+    { label: '온라인',   value: onlineCnt,  valueClass: onlineCnt ? 'text-emerald-600' : 'text-slate-400', iconBg: onlineCnt ? 'bg-emerald-50' : 'bg-slate-50',   icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="4" fill="#10b981" opacity="0.2"/><circle cx="9" cy="9" r="2.5" fill="#10b981"/></svg>' },
+    { label: '관리자',   value: adminCnt,   valueClass: 'text-violet-600',              iconBg: 'bg-violet-50',                                                       icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="#7c3aed" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#7c3aed" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+    { label: 'FCM 활성', value: fcmCnt,     valueClass: fcmCnt ? 'text-amber-500'      : 'text-slate-400', iconBg: fcmCnt ? 'bg-amber-50'      : 'bg-slate-50',   icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><path d="M9 1a5.5 5.5 0 0 1 5.5 5.5c0 2.5.5 3.5 1 4.5H2.5c.5-1 1-2 1-5A5.5 5.5 0 0 1 9 1z" stroke="#f59e0b" stroke-width="1.5"/><path d="M7 12a2 2 0 0 0 4 0" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></svg>' },
+  ];
+  if (effectiveFilter.value === 'REJECTED') return [
+    { label: '거절됨',   value: rejectCnt,  valueClass: rejectCnt ? 'text-red-500'     : 'text-slate-400', iconBg: rejectCnt ? 'bg-red-50'     : 'bg-slate-50',   icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="#ef4444" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#ef4444" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+    { label: '전체 회원', value: base.length, valueClass: 'text-slate-700',             iconBg: 'bg-slate-50',                                                        icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="7" cy="6" r="3" stroke="#64748b" stroke-width="1.6"/><path d="M1 16c0-3.3 2.7-6 6-6" stroke="#64748b" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="7" r="2.5" stroke="#64748b" stroke-width="1.4"/><path d="M11 16c0-2.5 0.9-4.5 2-4.5s2 2 2 4.5" stroke="#64748b" stroke-width="1.4" stroke-linecap="round"/></svg>' },
+    { label: '대기 중',  value: pendingCnt, valueClass: pendingCnt ? 'text-amber-500'  : 'text-slate-400', iconBg: pendingCnt ? 'bg-amber-50'  : 'bg-slate-50',   icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#f59e0b" stroke-width="1.6"/><path d="M9 5.5v4l2.5 2.5" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+    { label: '승인됨',   value: approvCnt,  valueClass: 'text-emerald-600',             iconBg: 'bg-emerald-50',                                                      icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="#10b981" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#10b981" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+  ];
+  // ALL
+  return [
+    { label: '전체 회원', value: base.length, valueClass: 'text-indigo-600',            iconBg: 'bg-indigo-50',                                                       icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="7" cy="6" r="3" stroke="#6366f1" stroke-width="1.6"/><path d="M1 16c0-3.3 2.7-6 6-6" stroke="#6366f1" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="7" r="2.5" stroke="#6366f1" stroke-width="1.4"/><path d="M11 16c0-2.5 0.9-4.5 2-4.5s2 2 2 4.5" stroke="#6366f1" stroke-width="1.4" stroke-linecap="round"/></svg>' },
+    { label: '온라인',   value: onlineCnt,  valueClass: onlineCnt ? 'text-emerald-600' : 'text-slate-400', iconBg: onlineCnt ? 'bg-emerald-50' : 'bg-slate-50',   icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="4" fill="#10b981" opacity="0.2"/><circle cx="9" cy="9" r="2.5" fill="#10b981"/></svg>' },
+    { label: '가입 대기', value: pendingCnt, valueClass: pendingCnt ? 'text-amber-500' : 'text-slate-400', iconBg: pendingCnt ? 'bg-amber-50' : 'bg-slate-50',    icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#f59e0b" stroke-width="1.6"/><path d="M9 5.5v4l2.5 2.5" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+    { label: '관리자',   value: adminCnt,   valueClass: 'text-violet-600',              iconBg: 'bg-violet-50',                                                       icon: '<svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="#7c3aed" stroke-width="1.6"/><path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#7c3aed" stroke-width="1.6" stroke-linecap="round"/></svg>' },
+  ];
+});
+
+// ── Selection (continued) ──
 const allChecked = computed(() =>
-  filteredUsers.value.length > 0 && filteredUsers.value.every(u => selectedIds.value.includes(u.id))
+  displayUsers.value.length > 0 && displayUsers.value.every(u => selectedIds.value.includes(u.id))
 );
 
 const toggleSelect = (id) => {
@@ -394,21 +480,32 @@ const toggleSelect = (id) => {
 
 const toggleAll = () => {
   if (allChecked.value) selectedIds.value = [];
-  else selectedIds.value = filteredUsers.value.map(u => u.id);
+  else selectedIds.value = displayUsers.value.map(u => u.id);
 };
 
-const bulkApprove = async () => {
-  const targets = selectedIds.value.length > 0 ? selectedIds.value : filteredUsers.value.map(u => u.id);
-  await Promise.all(targets.map(id => approveUser({ id })));
-  selectedIds.value = [];
+// ── Bulk approve confirm ──
+const bulkApproveConfirm = reactive({ show: false, targets: [] });
+
+const bulkApprove = () => {
+  bulkApproveConfirm.targets = selectedIds.value.slice();
+  bulkApproveConfirm.show = true;
+};
+
+const doBulkApprove = async () => {
+  try {
+    await Promise.all(bulkApproveConfirm.targets.map(id => approveUser({ id })));
+    showAdminToast(`${bulkApproveConfirm.targets.length}명 승인 완료`);
+    selectedIds.value = [];
+  } catch {
+    showAdminToast('승인 중 오류가 발생했습니다.', 'error');
+  } finally {
+    bulkApproveConfirm.show = false;
+  }
 };
 
 const bulkReject = () => {
-  const targets = selectedIds.value.length > 0
-    ? filteredUsers.value.filter(u => selectedIds.value.includes(u.id))
-    : filteredUsers.value;
   rejectModal.isBulk  = true;
-  rejectModal.targets = targets;
+  rejectModal.targets = displayUsers.value.filter(u => selectedIds.value.includes(u.id));
   rejectModal.target  = null;
   rejectModal.reason  = '';
   rejectModal.show    = true;
@@ -439,10 +536,22 @@ const submitReject = async () => {
 
 // ── Dropdown menu ──
 const menuOpen = ref(null);
+const menuPos  = ref({ top: 0, right: 0 });
+
+const setMenuOpen = (id, event) => {
+  if (menuOpen.value === id) { menuOpen.value = null; return; }
+  const rect = event.currentTarget.getBoundingClientRect();
+  menuPos.value = { top: rect.bottom + 4, right: window.innerWidth - rect.right };
+  menuOpen.value = id;
+};
+
+const onDocClick = () => { menuOpen.value = null; };
+document.addEventListener('click', onDocClick);
+onUnmounted(() => document.removeEventListener('click', onDocClick));
 
 // ── Create modal ──
 const createModal = reactive({
-  show: false,
+  show: false, error: '',
   form: { employeeId: '', name: '', password: '', role: 'USER', status: 'APPROVED' },
 });
 
@@ -452,17 +561,19 @@ const openCreateModal = (defaults = {}) => {
 };
 
 const submitCreate = async () => {
+  if (createModal.form.password.length < 4) { createModal.error = '비밀번호는 4자 이상이어야 합니다.'; return; }
+  createModal.error = '';
   try {
-    if (createModal.form.password.length < 4) { alert('비밀번호는 4자 이상이어야 합니다.'); return; }
     await createUser(createModal.form);
     createModal.show = false;
+    showAdminToast('유저가 생성되었습니다.');
   } catch (e) {
-    alert(e.response?.data?.message || '생성 중 오류가 발생했습니다.');
+    createModal.error = e.response?.data?.message || '생성 중 오류가 발생했습니다.';
   }
 };
 
 // ── Set password modal ──
-const pwModal = reactive({ show: false, userId: null, userName: '', password: '', confirm: '' });
+const pwModal = reactive({ show: false, error: '', userId: null, userName: '', password: '', confirm: '' });
 
 const openSetPasswordModal = (u) => {
   pwModal.userId   = u.id;
@@ -473,11 +584,17 @@ const openSetPasswordModal = (u) => {
 };
 
 const submitSetPassword = async () => {
-  if (pwModal.password.length < 4) { alert('비밀번호는 4자 이상이어야 합니다.'); return; }
-  if (pwModal.password !== pwModal.confirm) { alert('비밀번호가 일치하지 않습니다.'); return; }
-  await setUserPassword(pwModal.userId, pwModal.password);
-  pwModal.show = false;
-  alert(`${pwModal.userName} 님의 비밀번호가 설정되었습니다.`);
+  if (pwModal.password.length < 4) { pwModal.error = '비밀번호는 4자 이상이어야 합니다.'; return; }
+  if (pwModal.password !== pwModal.confirm) { pwModal.error = '비밀번호가 일치하지 않습니다.'; return; }
+  pwModal.error = '';
+  try {
+    await setUserPassword(pwModal.userId, pwModal.password);
+    const name = pwModal.userName;
+    pwModal.show = false;
+    showAdminToast(`${name} 님의 비밀번호가 설정되었습니다.`);
+  } catch (e) {
+    pwModal.error = e.response?.data?.message || '설정 중 오류가 발생했습니다.';
+  }
 };
 
 // ── Delete confirm ──

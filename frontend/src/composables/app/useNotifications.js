@@ -1,6 +1,6 @@
 import { ref, reactive } from 'vue';
 import api from '../../api';
-import { fetchBookings } from './useBookingData';
+import { fetchBookings, fetchMyBookings } from './useBookingData';
 
 // ──  토스트 시스템 알림 상태 ──────────────────────────────────────────
 export const toasts        = ref([]);
@@ -138,9 +138,17 @@ export const connectSse = () => {
     }
   });
 
+  // 재연결 시 누락된 예약 이벤트 보완
+  let _sseFirstOpen = true;
+  _sseSource.onopen = () => {
+    if (_sseFirstOpen) { _sseFirstOpen = false; return; }
+    fetchBookings();
+    fetchMyBookings();
+  };
+
   _sseSource.onerror = () => {
     _sseSource.close();
-    setTimeout(connectSse, 5000); // 5초 후 재연결 시도
+    setTimeout(connectSse, 5000);
   };
 };
 

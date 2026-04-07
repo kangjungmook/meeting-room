@@ -99,6 +99,7 @@ const submit = async () => {
   }
   try {
     await api.post('/auth/change-password', { newPassword: newPw.value });
+    sessionStorage.removeItem('passwordResetRequired');
     router.push('/main');
   } catch (e) {
     errorMsg.value = e.response?.data || '변경에 실패했습니다.';

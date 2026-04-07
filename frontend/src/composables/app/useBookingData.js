@@ -2,6 +2,7 @@ import { ref, computed } from 'vue';
 import dayjs from 'dayjs';
 import api from '../../api';
 import { viewMode, targetDate } from './useCalendar';
+import { liveNow } from './useRealtime';
 
 // ── 핵심 데이터 ───────────────────────────────────────────────
 export const rooms    = ref([]);
@@ -15,13 +16,14 @@ export const isLoadingMyBookings = ref(false);
 // ── 내 예약 ───────────────────────────────────────────────────
 export const myBookings         = ref([]);
 export const myBookingsToday    = computed(() => myBookings.value.filter(b =>
-  dayjs(b.startTime).isSame(dayjs(), 'day') && !dayjs(b.endTime).isBefore(dayjs())
+  dayjs(b.startTime).isSame(liveNow.value, 'day') && !dayjs(b.endTime).isBefore(liveNow.value)
 ));
 export const myBookingsThisWeek = computed(() => myBookings.value.filter(b => {
   const d = dayjs(b.startTime);
-  return !d.isSame(dayjs(), 'day') && d.isSame(dayjs(), 'week');
+  return !d.isSame(liveNow.value, 'day') && d.isSame(liveNow.value, 'week') && !dayjs(b.endTime).isBefore(liveNow.value);
 }));
-export const myBookingsUpcoming = computed(() => myBookings.value.filter(b => dayjs(b.startTime).isAfter(dayjs().endOf('week'))));
+export const myBookingsUpcoming = computed(() => myBookings.value.filter(b => dayjs(b.startTime).isAfter(liveNow.value.endOf('week'))));
+export const myBookingsPast     = computed(() => myBookings.value.filter(b => dayjs(b.endTime).isBefore(liveNow.value)));
 
 // ── API ───────────────────────────────────────────────────────
 export const fetchRooms = async () => {

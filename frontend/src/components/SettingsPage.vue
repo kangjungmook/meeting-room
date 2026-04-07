@@ -121,7 +121,7 @@
 
               <!-- 리마인더 시점 -->
               <div>
-                <p class="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">리마인더 알림 시점</p>
+                <p class="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">미리 알림 시점</p>
                 <div class="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden bg-white dark:bg-gray-900 px-5 py-4 flex flex-col gap-3">
                   <p class="text-[12px] text-gray-400 dark:text-gray-500">회의 시작 몇 분 전에 알림을 받을지 직접 설정합니다.</p>
                   <div class="flex flex-wrap gap-2">
@@ -163,7 +163,7 @@
                                      userNotifPrefs[item.key] ? 'left-[22px]' : 'left-0.5']"></span>
                     </button>
                   </div>
-                  <div class="flex items-center justify-between px-5 py-4">
+                  <div class="flex items-center justify-between px-5 py -4">
                     <div>
                       <p class="text-[13.5px] font-semibold text-gray-700 dark:text-gray-200">토스트 유지 시간</p>
                       <p class="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">알림 배너가 사라지기까지의 시간</p>
@@ -248,7 +248,7 @@ const tabs = [
 const pushItems = [
   { key: 'receiveInvitation', label: '초대 알림',  desc: '내가 참석자로 추가될 때' },
   { key: 'receiveUpdates',    label: '수정 알림',  desc: '참석 중인 예약이 변경될 때' },
-  { key: 'receiveReminder',   label: '리마인더',   desc: '회의 시작 전 푸시 알림' },
+  { key: 'receiveReminder',   label: '미리 알림',   desc: '회의 시작 전 푸시 알림' },
 ];
 
 const toastItems = [

@@ -27,7 +27,7 @@ dayjs.locale('ko');
 // ── 서브 모듈 ─────────────────────────────────────────────────
 import {
   currentUser, allRooms, allBookings, logs, dashboard, users, onlineUsers,
-  notifSetting, participationStats, fetchAll, fetchNotifSetting,
+  notifSetting, participationStats, adminLiveNow, fetchAll, fetchNotifSetting,
 } from './admin/useAdminState';
 import { createRoom, updateRoom, deleteRoom, toggleRoom } from './admin/useAdminRooms';
 import {
@@ -56,11 +56,12 @@ import {
 
 // ── 배럴 전용 computed (여러 모듈 데이터를 조합) ───────────────
 const todayBookings = computed(() =>
-  allBookings.value.filter(b => dayjs(b.startTime).isSame(dayjs(), 'day'))
+  allBookings.value.filter(b => dayjs(b.startTime).isSame(adminLiveNow.value, 'day'))
 );
-const activeBookings = computed(() =>
-  allBookings.value.filter(b => dayjs().isAfter(dayjs(b.startTime)) && dayjs().isBefore(dayjs(b.endTime)))
-);
+const activeBookings = computed(() => {
+  const now = adminLiveNow.value;
+  return allBookings.value.filter(b => now.isAfter(dayjs(b.startTime)) && now.isBefore(dayjs(b.endTime)));
+});
 const recentActivity = computed(() => [...logs.value].slice(0, 5));
 const stats = computed(() => [
   {
@@ -111,7 +112,7 @@ const doFullReset = async () => {
 export function useAdmin() {
   return {
     // 핵심 데이터
-    allRooms, allBookings, logs, dashboard, users, notifSetting, broadcast, currentUser, onlineUsers,
+    allRooms, allBookings, logs, dashboard, users, notifSetting, broadcast, currentUser, onlineUsers, adminLiveNow,
     participationStats,
     // 네비게이션
     activeTab, manageUserFilter,

@@ -308,7 +308,7 @@ const router = useRouter();
 
 const {
   isMobile, showDrawer,
-  myBookings, myBookingsToday, myBookingsThisWeek, myBookingsUpcoming,
+  myBookings, myBookingsToday, myBookingsThisWeek, myBookingsUpcoming, myBookingsPast,
   getRoomColor, getRoomName, resolveAttendees, canEditOrCancel,
   openEditModal, confirmCancel, currentUser,
   fetchMyBookings, fetchRooms,
@@ -333,10 +333,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => { disconnectSse(); });
-
-const myBookingsPast = computed(() =>
-  myBookings.value.filter(b => dayjs(b.endTime).isBefore(dayjs()))
-);
 
 const fmtRange = b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`;
 const fmtToday = b => `${dayjs(b.startTime).format('HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`;

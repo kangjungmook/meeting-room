@@ -32,7 +32,7 @@
         <div v-for="room in rooms" :key="room.id"
              class="flex border-b border-gray-100 dark:border-gray-800 last:border-b-0">
           <div class="w-20 px-2 flex-shrink-0 flex items-center gap-1.5 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 sticky left-0 z-10"
-               style="min-height: 80px;">
+               :style="{ minHeight: isMobile ? '90px' : '130px' }">
             <span class="w-1 h-8 rounded-full flex-shrink-0" :style="{ background: room.colorCode }"></span>
             <div class="min-w-0">
               <p class="text-[11px] font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{{ room.name }}</p>
@@ -41,7 +41,7 @@
           </div>
           <div v-for="day in weekDays" :key="day.format()"
                :class="[
-                 'flex-1 border-r border-gray-100 dark:border-gray-800 last:border-r-0 p-1.5 flex flex-col gap-1 transition-colors',
+                 'flex-1 border-r border-gray-100 dark:border-gray-800 last:border-r-0 p-2 flex flex-col gap-1.5 transition-colors',
                  day.isSame(dayjs(), 'day') ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                ]"
                @click="openQuickModal(room.id, 9, day)">
@@ -137,12 +137,13 @@ import SkeletonBookingList from './SkeletonBookingList.vue';
 const {
   rooms, bookings, weekDays, isMobile,
   tooltip, showTooltip, pinTooltip, openQuickModal,
-  filterBookings, sortBookings,
+  filterBookings, getBookingsForDate, sortBookings,
   isExpanded, toggleExpand,
   goToDay, isLoadingBookings,
 } = useApp();
 
 const weekBookings = computed(() =>
-  bookings.value.filter(b => b.status !== 'cancelled' && weekDays.value.some(d => dayjs(b.startTime).isSame(d, 'day')))
+  weekDays.value.flatMap(d => getBookingsForDate(d))
+    .filter((b, i, arr) => arr.findIndex(x => x.id === b.id) === i)
 );
 </script>

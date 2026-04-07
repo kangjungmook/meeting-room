@@ -476,7 +476,9 @@ const openBooking = () => {
 
 const endNow = async () => {
   try {
-    await api.patch(`/bookings/${currentBooking.value.id}/end`);
+    await api.patch(`/bookings/${currentBooking.value.id}/end-kiosk`, null, {
+      params: { roomId: roomId.value },
+    });
     showEndConfirm.value = false;
     fetchBookings();
   } catch (e) {
@@ -592,19 +594,22 @@ onMounted(async () => {
 
   connectSse();
 
-  try {
-    await document.documentElement.requestFullscreen();
-  } catch (e) {
-    // ignore fullscreen errors
-  }
+  // 브라우저 정책상 자동 fullscreen 불가 — 첫 클릭/터치 시 한 번만 시도
+  const enterFullscreenOnce = async () => {
+    if (!document.fullscreenElement) {
+      try { await document.documentElement.requestFullscreen(); } catch { /* ignore */ }
+    }
+    window.removeEventListener('pointerdown', enterFullscreenOnce);
+  };
+  window.addEventListener('pointerdown', enterFullscreenOnce);
 
   window.addEventListener('beforeunload', handleBeforeUnload);
   window.addEventListener('keydown', handleKeydown, true);
   window.addEventListener('contextmenu', handleContextMenu);
 
-  history.pushState(null, '', location.href);
+  history.pushState({ ...history.state }, '', location.href);
   popstateHandler = () => {
-    history.pushState(null, '', location.href);
+    history.pushState({ ...history.state }, '', location.href);
   };
   window.addEventListener('popstate', popstateHandler);
 });

@@ -294,7 +294,7 @@
       <div class="flex gap-2 pt-1 pb-2">
         <button type="button" @click="$emit('close')"
           class="px-5 py-3 rounded-xl bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-500 dark:text-gray-300 text-[13px] font-bold transition-all">
-          취소
+            취소
         </button>
         <button v-if="!editBooking" type="button" @click="resetForm"
           class="px-4 py-3 rounded-xl bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-400 dark:text-gray-400 text-[13px] font-bold transition-all"
@@ -303,14 +303,14 @@
             <path d="M2 8a6 6 0 1 0 1.5-4M2 4v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <button type="submit" :disabled="!canSubmit"
+        <button type="submit" :disabled="!canSubmit || isSubmitting"
           :class="[
             'flex-1 py-3 rounded-xl text-[14px] font-black transition-all',
-            !canSubmit
+            (!canSubmit || isSubmitting)
               ? 'bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-gray-500 cursor-not-allowed'
               : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-100 dark:shadow-indigo-900/30 active:scale-[0.99]'
           ]">
-          {{ canSubmit ? (editBooking ? '수정 완료' : '예약 확정') : !form.roomId ? '회의실을 선택해주세요' : !form.title ? '회의 제목을 입력해주세요' : selectedStart && !selectedEnd ? '종료 시간을 선택해주세요' : !selectedStart ? '시간을 선택해주세요' : (editBooking ? '수정 완료' : '예약 확정') }}
+          {{ isSubmitting ? (editBooking ? '수정 중...' : '예약 중...') : canSubmit ? (editBooking ? '수정 완료' : '예약 확정') : !form.roomId ? '회의실을 선택해주세요' : !form.title ? '회의 제목을 입력해주세요' : selectedStart && !selectedEnd ? '종료 시간을 선택해주세요' : !selectedStart ? '시간을 선택해주세요' : (editBooking ? '수정 완료' : '예약 확정') }}
         </button>
       </div>
 
@@ -359,7 +359,7 @@ const {
   pickStart: _pickStart, pickEnd,
   onStartInput: _onStartInput, onEndInput: _onEndInput,
   durationFrom, durationLabel, activeDuration,
-  jumpToNow, quickDurations, setDuration,
+  quickDurations, setDuration,
   conflictingBookings, hasConflict,
   clearSelection, closeStartDelayed, closeEndDelayed,
 } = useTimeSlots(form, toRef(props, 'bookings'), editBooking);
@@ -397,7 +397,10 @@ const canSubmit  = computed(() =>
   !!form.title && !isPastDate.value && !hasConflict.value
 );
 
+const isSubmitting = ref(false);
+
 const submitBooking = async () => {
+  if (isSubmitting.value) return;
   errorMsg.value = '';
   if (!selectedStart.value || !selectedEnd.value) { errorMsg.value = '시간을 선택해주세요.'; return; }
   if (isPastDate.value) { errorMsg.value = '과거 날짜에는 예약할 수 없습니다.'; return; }
@@ -407,6 +410,7 @@ const submitBooking = async () => {
       errorMsg.value = '현재 시간 이후로만 예약할 수 있습니다.'; return;
     }
   }
+  isSubmitting.value = true;
   try {
     const payload = {
       roomId:      form.roomId,
@@ -425,6 +429,8 @@ const submitBooking = async () => {
   } catch (e) {
     const msg = e.response?.data;
     errorMsg.value = typeof msg === 'string' ? msg : '이미 예약된 시간대입니다.';
+  } finally {
+    isSubmitting.value = false;
   }
 };
 

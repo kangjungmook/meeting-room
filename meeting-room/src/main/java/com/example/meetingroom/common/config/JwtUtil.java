@@ -2,6 +2,7 @@ package com.example.meetingroom.common.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -10,10 +11,13 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET = "meetingroom-secret-key-must-be-at-least-32-bytes";
     private static final long EXPIRATION = 1000 * 60 * 60 * 8; // 8시간
 
-    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private final Key key;
+
+    public JwtUtil(@Value("${app.jwt.secret}") String secret) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String generateToken(String employeeId, String role, String name, Long userId) {
         return Jwts.builder()
