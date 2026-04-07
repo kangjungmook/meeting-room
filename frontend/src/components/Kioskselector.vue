@@ -144,12 +144,22 @@ const enterKiosk = (roomId) => {
   router.push(`/kiosk/${roomId}`);
 };
 
+const handleFullscreenChange = async () => {
+  if (!document.fullscreenElement) {
+    try { await document.documentElement.requestFullscreen(); } catch { /* ignore */ }
+  }
+};
+
 let clockTimer = null;
 let refreshTimer = null;
 
 onMounted(async () => {
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
+  if (!document.fullscreenElement) {
+    try { await document.documentElement.requestFullscreen(); } catch { /* ignore */ }
+  }
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
   await fetchRooms();
   await fetchBookings();
   clockTimer   = setInterval(() => { now.value = dayjs(); }, 1000);
@@ -159,6 +169,7 @@ onMounted(async () => {
 onUnmounted(() => {
   clearInterval(clockTimer);
   clearInterval(refreshTimer);
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
   document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
 });

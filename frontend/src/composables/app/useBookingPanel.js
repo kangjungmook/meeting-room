@@ -1,6 +1,6 @@
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import api from '../../api';
-import { isMobile } from './useCalendar';
+import { isMobile, viewMode } from './useCalendar';
 import { fetchBookings, fetchMyBookings } from './useBookingData';
 
 // ── 예약 패널 ─────────────────────────────────────────────────
@@ -60,6 +60,9 @@ export const openMyBookings = () => { fetchMyBookings(); showMyBookings.value = 
 export const tooltip      = reactive({ show: false, booking: null, style: {}, pinned: false });
 export const detailTarget = ref(null);
 export const popoverStyle = ref({});
+
+// 뷰 전환 시 툴팁 초기화
+watch(viewMode, () => { tooltip.show = false; tooltip.pinned = false; tooltip.booking = null; });
 
 export const showTooltip = (b, event) => {
   if (tooltip.pinned || isMobile.value) return;

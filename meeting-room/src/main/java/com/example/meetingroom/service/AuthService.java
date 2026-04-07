@@ -119,6 +119,7 @@ public class AuthService {
         userRepository.findByEmployeeId(employeeId).ifPresent(user -> {
             user.setRefreshToken(null);
             user.setRefreshTokenExpiry(null);
+            user.setLastLogoutAt(LocalDateTime.now());
             adminLogService.log("USER_LOGOUT",
                     user.getName() + " (" + user.getEmployeeId() + ") 로그아웃",
                     Map.of("employeeId", user.getEmployeeId(), "name", user.getName()));

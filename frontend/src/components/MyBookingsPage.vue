@@ -43,6 +43,53 @@
         </div>
       </div>
 
+      <!-- 필터 바 -->
+      <div class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 flex items-center gap-2.5 flex-wrap">
+        <!-- 검색 -->
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl min-w-[140px] flex-1 max-w-[260px]">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" class="text-gray-400 flex-shrink-0">
+            <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <input v-model="searchQuery" type="text" placeholder="제목 검색..."
+            class="bg-transparent text-[13px] outline-none w-full text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-600" />
+          <button v-if="searchQuery" @click="searchQuery = ''"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+            <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+              <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 회의실 필터 -->
+        <select v-model="filterRoom"
+          class="text-[13px] px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none text-gray-600 dark:text-gray-300 cursor-pointer">
+          <option value="">전체 회의실</option>
+          <option v-for="r in uniqueRooms" :key="r.id" :value="r.id">{{ r.name }}</option>
+        </select>
+
+        <!-- 역할 필터 -->
+        <div class="flex gap-1">
+          <button v-for="opt in roleOpts" :key="opt.value"
+            @click="filterRole = filterRole === opt.value ? '' : opt.value"
+            :class="filterRole === opt.value
+              ? 'bg-indigo-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'"
+            class="text-[12px] font-semibold px-3 py-1.5 rounded-xl transition-colors">
+            {{ opt.label }}
+          </button>
+        </div>
+
+        <!-- 필터 초기화 -->
+        <button v-if="hasFilter" @click="searchQuery = ''; filterRoom = ''; filterRole = ''"
+          class="ml-auto flex items-center gap-1 text-[12px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+          <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          초기화
+        </button>
+      </div>
+
       <!-- 상세 모달 -->
       <transition name="modal">
         <div v-if="detailBooking"
@@ -319,6 +366,31 @@ const {
 const detailBooking = ref(null);
 const refreshing    = ref(false);
 
+const searchQuery = ref('');
+const filterRoom  = ref('');
+const filterRole  = ref('');
+const roleOpts = [
+  { value: 'organizer', label: '예약자' },
+  { value: 'attendee',  label: '참석자' },
+];
+
+const hasFilter = computed(() => !!(searchQuery.value || filterRoom.value || filterRole.value));
+
+const uniqueRooms = computed(() => {
+  const seen = new Set();
+  return myBookings.value
+    .filter(b => { if (seen.has(b.roomId)) return false; seen.add(b.roomId); return true; })
+    .map(b => ({ id: b.roomId, name: getRoomName(b.roomId) }));
+});
+
+const applyFilter = (list) => list.filter(b => {
+  if (searchQuery.value && !b.title.toLowerCase().includes(searchQuery.value.toLowerCase())) return false;
+  if (filterRoom.value && b.roomId !== filterRoom.value) return false;
+  if (filterRole.value === 'organizer' && b.userId !== currentUser.id) return false;
+  if (filterRole.value === 'attendee'  && b.userId === currentUser.id) return false;
+  return true;
+});
+
 const refresh = async () => {
   refreshing.value = true;
   await fetchMyBookings();
@@ -338,13 +410,13 @@ const fmtRange = b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${da
 const fmtToday = b => `${dayjs(b.startTime).format('HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`;
 
 const sections = computed(() => [
-  { label: '오늘 회의',  color: '#3b82f6', list: myBookingsToday.value,   fmt: fmtToday, past: false,
+  { label: '오늘 회의',  color: '#3b82f6', list: applyFilter(myBookingsToday.value),   fmt: fmtToday, past: false,
     dateRange: dayjs().format('M/D (ddd)') },
-  { label: '이번 주',   color: '#8b5cf6', list: myBookingsThisWeek.value, fmt: fmtRange, past: false,
+  { label: '이번 주',   color: '#8b5cf6', list: applyFilter(myBookingsThisWeek.value), fmt: fmtRange, past: false,
     dateRange: `${dayjs().startOf('week').format('M/D')} – ${dayjs().endOf('week').format('M/D')}` },
-  { label: '이후 일정', color: '#10b981', list: myBookingsUpcoming.value, fmt: fmtRange, past: false,
+  { label: '이후 일정', color: '#10b981', list: applyFilter(myBookingsUpcoming.value), fmt: fmtRange, past: false,
     dateRange: `${dayjs().endOf('week').add(1, 'day').format('M/D')} ~` },
-  { label: '지난 회의', color: '#94a3b8', list: myBookingsPast.value,     fmt: fmtRange, past: true,
+  { label: '지난 회의', color: '#94a3b8', list: applyFilter(myBookingsPast.value),     fmt: fmtRange, past: true,
     dateRange: `~ ${dayjs().subtract(1, 'day').format('M/D')}` },
 ]);
 

@@ -7,7 +7,7 @@
 
         <!-- 요일 헤더 -->
         <div class="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-          <div class="w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 sticky left-0 z-20 bg-gray-50 dark:bg-gray-800"></div>
+          <div class="w-28 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 sticky left-0 z-20 bg-gray-50 dark:bg-gray-800"></div>
           <div v-for="day in weekDays" :key="day.format()"
                class="flex-1 flex flex-col items-center gap-1 py-2.5 border-r border-gray-100 dark:border-gray-800 last:border-r-0 cursor-pointer select-none"
                :class="day.day() === 0 ? 'bg-red-50/50 dark:bg-red-900/10' : day.day() === 6 ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''"
@@ -31,12 +31,12 @@
         <!-- 회의실 × 요일 셀 -->
         <div v-for="room in rooms" :key="room.id"
              class="flex border-b border-gray-100 dark:border-gray-800 last:border-b-0">
-          <div class="w-20 px-2 flex-shrink-0 flex items-center gap-1.5 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 sticky left-0 z-10"
+          <div class="w-28 px-2.5 flex-shrink-0 flex items-center gap-2 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 sticky left-0 z-10"
                :style="{ minHeight: isMobile ? '90px' : '130px' }">
-            <span class="w-1 h-8 rounded-full flex-shrink-0" :style="{ background: room.colorCode }"></span>
+            <span class="w-1.5 h-8 rounded-full flex-shrink-0" :style="{ background: room.colorCode }"></span>
             <div class="min-w-0">
-              <p class="text-[11px] font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{{ room.name }}</p>
-              <p class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
+              <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{{ room.name }}</p>
+              <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
             </div>
           </div>
           <div v-for="day in weekDays" :key="day.format()"

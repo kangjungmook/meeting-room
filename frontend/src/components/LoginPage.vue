@@ -157,9 +157,9 @@
           </button>
         </form>
 
-        <!-- 키오스크 -->
-        <div class="pt-2 border-t border-gray-100 text-center">
-          <button @click="router.push('/kiosk')"
+        <!-- 키오스크 (모바일 숨김) -->
+        <div class="hidden sm:block pt-2 border-t border-gray-100 text-center">
+          <button @click="enterKioskMode"
             class="inline-flex items-center gap-1.5 text-[13px] text-gray-400 hover:text-gray-600 transition-colors">
             <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
               <rect x="1.5" y="2.5" width="15" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
@@ -180,6 +180,11 @@ import api from '../api';
 import { refreshCurrentUser } from '../composables/useApp';
 
 const router = useRouter();
+
+const enterKioskMode = () => {
+  document.documentElement.requestFullscreen?.();
+  router.push('/kiosk');
+};
 const mode = ref('login');
 const showPw = ref(false);
 const errorMsg = ref('');

@@ -58,6 +58,9 @@ public class User {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
+    @Column(name = "last_logout_at")
+    private LocalDateTime lastLogoutAt;
+
     /** 가입 거절 사유 */
     @Column(name = "reject_reason", columnDefinition = "TEXT")
     private String rejectReason;

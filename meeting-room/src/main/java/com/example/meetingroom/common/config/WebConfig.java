@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://192.168.152.1:5173",
                         "http://192.168.1.115:5173",
                         "http://192.168.1.123.nip.io:5173",
-                        "https://192.168.1.123.nip.io:5173/"
+                        "https://192.168.1.123.nip.io:5173"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
     }

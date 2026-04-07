@@ -28,6 +28,22 @@
       </div>
       <span class="text-[12px] text-slate-400 font-semibold whitespace-nowrap">{{ displayUsers.length }}명</span>
 
+      <!-- 승인/전체 탭: 온라인 필터 -->
+      <div v-if="effectiveFilter === 'APPROVED' || effectiveFilter === 'ALL'"
+        class="flex bg-white border border-slate-200 rounded-xl p-0.5 gap-0.5">
+        <button v-for="of_ in onlineFilters" :key="of_.k" @click="onlineFilter = of_.k"
+          :class="['px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all flex items-center gap-1.5',
+            onlineFilter === of_.k
+              ? of_.k === 'ONLINE'  ? 'bg-emerald-500 text-white'
+              : of_.k === 'OFFLINE' ? 'bg-slate-400 text-white'
+              : 'bg-slate-800 text-white'
+              : 'text-slate-500 hover:bg-slate-50']">
+          <span v-if="of_.k === 'ONLINE'"  class="w-1.5 h-1.5 rounded-full bg-current"></span>
+          <span v-else-if="of_.k === 'OFFLINE'" class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+          {{ of_.l }}
+        </button>
+      </div>
+
       <!-- 대기 탭: 선택 시 일괄 처리 -->
       <template v-if="effectiveFilter === 'PENDING' && selectedIds.length > 0">
         <span class="text-[13px] text-slate-500 font-semibold">{{ selectedIds.length }}명 선택됨</span>
@@ -61,7 +77,7 @@
               <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">역할</th>
               <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">FCM</th>
               <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">가입일</th>
-              <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">최근 접속</th>
+              <th class="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">접속 현황</th>
               <th class="text-right px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">관리</th>
             </tr>
           </thead>
@@ -97,9 +113,27 @@
                 <span v-else class="text-[12px] text-slate-300 font-semibold">—</span>
               </td>
               <td class="px-4 py-3 text-[12px] text-slate-500">{{ dayjs(u.createdAt).format('MM/DD HH:mm') }}</td>
-              <td class="px-4 py-3 text-[12px]">
-                <span v-if="u.lastLoginAt" class="text-slate-500">{{ dayjs(u.lastLoginAt).format('MM/DD HH:mm') }}</span>
-                <span v-else class="text-slate-300">—</span>
+              <td class="px-4 py-3">
+                <template v-if="onlineUsers.includes(u.employeeId)">
+                  <span class="flex items-center gap-1.5 text-[12px] font-bold text-emerald-500">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>온라인
+                  </span>
+                  <span v-if="u.lastLoginAt" class="block text-[11px] text-slate-400 tabular-nums mt-0.5">
+                    접속 {{ dayjs(u.lastLoginAt).format('MM/DD HH:mm') }}
+                  </span>
+                </template>
+                <template v-else-if="u.lastLoginAt || u.lastLogoutAt">
+                  <span class="text-[12px] text-slate-400">오프라인</span>
+                  <span v-if="u.lastLoginAt" class="block text-[11px] text-slate-400 tabular-nums mt-0.5">
+                    접속 {{ dayjs(u.lastLoginAt).format('MM/DD HH:mm') }}
+                  </span>
+                  <span v-if="u.lastLogoutAt" class="block text-[11px] text-slate-400 tabular-nums">
+                    종료 {{ dayjs(u.lastLogoutAt).format('MM/DD HH:mm') }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="text-slate-300 text-[12px]">—</span>
+                </template>
               </td>
               <td class="px-5 py-3 text-right">
                 <div class="flex items-center justify-end gap-2">
@@ -181,7 +215,26 @@
               <span :class="['px-2 py-0.5 rounded-lg text-[10px] font-bold', u.role === 'ADMIN' ? 'bg-violet-100 text-violet-600' : 'bg-slate-100 text-slate-700']">{{ u.role }}</span>
               <span v-if="u.fcmToken" class="flex items-center gap-1 text-[11px] font-semibold text-emerald-500"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>FCM</span>
             </div>
-            <p class="text-[12px] text-slate-600 mt-0.5">{{ u.employeeId }} · 가입 {{ dayjs(u.createdAt).format('MM/DD') }}<span v-if="u.lastLoginAt"> · 접속 {{ dayjs(u.lastLoginAt).format('MM/DD HH:mm') }}</span></p>
+            <p class="text-[12px] text-slate-600 mt-0.5">{{ u.employeeId }} · 가입 {{ dayjs(u.createdAt).format('MM/DD') }}</p>
+            <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+              <template v-if="onlineUsers.includes(u.employeeId)">
+                <span class="flex items-center gap-1 text-[11px] font-bold text-emerald-500">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>온라인
+                </span>
+                <span v-if="u.lastLoginAt" class="text-[11px] text-slate-400 tabular-nums">
+                  접속 {{ dayjs(u.lastLoginAt).format('MM/DD HH:mm') }}
+                </span>
+              </template>
+              <template v-else-if="u.lastLoginAt || u.lastLogoutAt">
+                <span class="text-[11px] text-slate-400">오프라인</span>
+                <span v-if="u.lastLoginAt" class="text-[11px] text-slate-400 tabular-nums">
+                  접속 {{ dayjs(u.lastLoginAt).format('MM/DD HH:mm') }}
+                </span>
+                <span v-if="u.lastLogoutAt" class="text-[11px] text-slate-400 tabular-nums">
+                  · 종료 {{ dayjs(u.lastLogoutAt).format('MM/DD HH:mm') }}
+                </span>
+              </template>
+            </div>
           </div>
         </div>
         <div class="flex gap-2 pt-3 border-t border-slate-50">
@@ -418,16 +471,27 @@ const localFilteredUsers = computed(() => {
 // ── Selection ──
 const selectedIds = ref([]);
 
-// ── 검색 ──
+// ── 검색 + 온라인 필터 ──
 const searchKeyword = ref('');
-watch(effectiveFilter, () => { selectedIds.value = []; searchKeyword.value = ''; });
+const onlineFilter  = ref('ALL');
+const onlineFilters = [
+  { k: 'ALL',     l: '전체' },
+  { k: 'ONLINE',  l: '온라인' },
+  { k: 'OFFLINE', l: '오프라인' },
+];
+
+watch(effectiveFilter, () => { selectedIds.value = []; searchKeyword.value = ''; onlineFilter.value = 'ALL'; });
 
 const displayUsers = computed(() => {
   const kw = searchKeyword.value.trim().toLowerCase();
-  if (!kw) return localFilteredUsers.value;
-  return localFilteredUsers.value.filter(u =>
-    u.name.toLowerCase().includes(kw) || u.employeeId.toLowerCase().includes(kw)
-  );
+  return localFilteredUsers.value.filter(u => {
+    const matchKw     = !kw || u.name.toLowerCase().includes(kw) || u.employeeId.toLowerCase().includes(kw);
+    const isOnline    = onlineUsers.value.includes(u.employeeId);
+    const matchOnline = onlineFilter.value === 'ALL'
+      || (onlineFilter.value === 'ONLINE'  &&  isOnline)
+      || (onlineFilter.value === 'OFFLINE' && !isOnline);
+    return matchKw && matchOnline;
+  });
 });
 
 // ── 통계 카드 ──

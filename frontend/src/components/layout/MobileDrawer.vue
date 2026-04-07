@@ -35,17 +35,6 @@
           </div>
         </div>
 
-        <!-- 새 예약 버튼 -->
-        <div class="flex-shrink-0 px-3 pb-3">
-          <button @click="showDrawer = false; showModal = true"
-                  class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-[13px] font-semibold transition-all shadow-sm">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-            </svg>
-            새 예약
-          </button>
-        </div>
-
         <!-- 내비게이션 -->
         <nav class="flex-shrink-0 px-2 flex flex-col gap-0.5">
           <button @click="router.push('/main'); closeDrawer()"

@@ -30,7 +30,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> getApprovedUsers() {
         List<Map<String, Object>> users = userRepository.findAll().stream()
-            .filter(u -> "APPROVED".equals(u.getStatus()))
+            .filter(u -> "APPROVED".equals(u.getStatus()) && !"ADMIN".equals(u.getRole()))
             .map(u -> Map.<String, Object>of(
                 "id", u.getId(),
                 "name", u.getName(),
