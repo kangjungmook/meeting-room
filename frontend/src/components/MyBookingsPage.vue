@@ -156,9 +156,9 @@
                 </p>
               </div>
 
-              <!-- 주최자 -->
+              <!-- 예약자 -->
               <div>
-                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">주최자</p>
+                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">예약자</p>
                 <div class="flex items-center gap-2.5 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                   <div class="w-7 h-7 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center flex-shrink-0">
                     <svg width="11" height="11" viewBox="0 0 15 15" fill="none">
@@ -286,7 +286,7 @@
                 <p class="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5 tabular-nums">{{ section.fmt(b) }}</p>
               </div>
 
-              <!-- 주최자 (모바일 숨김) -->
+              <!-- 예약자 (모바일 숨김) -->
               <div class="hidden sm:flex w-[120px] flex-shrink-0 px-4 py-3.5 items-center gap-1.5">
                 <svg width="10" height="10" viewBox="0 0 15 15" fill="none" class="text-gray-300 dark:text-gray-600 flex-shrink-0">
                   <circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
@@ -360,7 +360,7 @@ const {
   openEditModal, confirmCancel, currentUser,
   fetchMyBookings, fetchRooms,
   connectSse, disconnectSse, applyNotifPrefs,
-  isLoadingMyBookings,
+  isLoadingMyBookings, userMap,
 } = useApp();
 
 const detailBooking = ref(null);
@@ -401,6 +401,11 @@ onMounted(async () => {
   await fetchRooms();
   await fetchMyBookings();
   connectSse();
+  api.get('/users').then(res => {
+    const map = {};
+    res.data.forEach(u => { map[u.id] = u.name; });
+    userMap.value = map;
+  }).catch(() => {});
   api.get('/users/notification-preference').then(res => applyNotifPrefs(res.data)).catch(() => {});
 });
 

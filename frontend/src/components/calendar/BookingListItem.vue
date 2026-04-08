@@ -26,7 +26,7 @@
           {{ booking.title }}
         </p>
 
-        <!-- 주최자 + 참석자 -->
+        <!-- 예약자 + 참석자 -->
         <div class="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1.5">
           <span class="flex items-center gap-1 text-[11.5px] text-gray-400 dark:text-gray-500">
             <svg width="10" height="10" viewBox="0 0 15 15" fill="none">

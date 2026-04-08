@@ -36,6 +36,7 @@ export function useAttendeeSearch(form, currentUserId, editBooking) {
           selectedAttendees.value.push({ name, id: null, employeeId: `guest_${Date.now()}_${Math.random()}` });
         });
       }
+      if (editBooking) syncAttendees();
     } catch (e) {
       console.error('[attendee] failed to load users:', e.response?.status, e.message);
     }

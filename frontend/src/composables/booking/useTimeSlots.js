@@ -48,7 +48,6 @@ export function useTimeSlots(form, bookings, editBooking) {
   // ── 지난 슬롯 체크 ────────────────────────────────────────────
   const isToday    = computed(() => dayjs(form.startDate).isSame(now, 'day'));
   const isPastSlot = (slot) => {
-    if (editBooking) return false;
     if (!isToday.value) return false;
     const [h, m] = slot.split(':').map(Number);
     return !dayjs(form.startDate).hour(h).minute(m).isAfter(now);

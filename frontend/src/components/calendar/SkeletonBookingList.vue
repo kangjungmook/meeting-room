@@ -14,7 +14,7 @@
           </div>
           <!-- 제목 자리 -->
           <div class="h-4 w-3/5 rounded-md bg-gray-200 dark:bg-gray-700"></div>
-          <!-- 주최자 자리 -->
+          <!-- 예약자 자리 -->
           <div class="h-3 w-2/5 rounded-md bg-gray-100 dark:bg-gray-800"></div>
         </div>
 
