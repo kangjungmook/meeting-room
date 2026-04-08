@@ -29,12 +29,9 @@ export const filterBookings     = (roomId, date) =>
 export const getBookingsForDate = (date) =>
   bookings.value.filter(b => dayjs(b.startTime).isSame(date, 'day') && b.status !== 'CANCELLED' && matchesSearch(b));
 
-export const sortBookings = (list) => [...list].sort((a, b) => {
-  if (sortBy.value === 'time')      return dayjs(a.startTime).diff(dayjs(b.startTime));
-  if (sortBy.value === 'room')      return getRoomName(a.roomId).localeCompare(getRoomName(b.roomId));
-  if (sortBy.value === 'organizer') return (a.organizer ?? '').localeCompare(b.organizer ?? '');
-  return 0;
-});
+export const sortBookings = (list) => [...list].sort((a, b) =>
+  dayjs(a.startTime).diff(dayjs(b.startTime))
+);
 
 export const canEditOrCancel = (b) =>
   !dayjs(b.endTime).isBefore(dayjs()) && (isAdmin || b.userId === currentUser.id);

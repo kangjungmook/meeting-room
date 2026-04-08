@@ -54,9 +54,7 @@ export const monthCells = computed(() => {
 export const expandedCells = reactive({});
 export const sortBy        = ref('time');
 export const sortOptions   = [
-  { val: 'time',      label: '시간순' },
-  { val: 'room',      label: '회의실' },
-  { val: 'organizer', label: '예약자' },
+  { val: 'time', label: '시간순' },
 ];
 export const toggleExpand = (key) => { expandedCells[key] = !expandedCells[key]; };
 export const isExpanded   = (key) => !!expandedCells[key];

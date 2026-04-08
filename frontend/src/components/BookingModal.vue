@@ -76,11 +76,11 @@
       </div>
 
       <!-- 날짜 -->
-      <div class="flex flex-col gap-1.5">
+      <div class="flex flex-col gap-1.5 overflow-hidden">
         <label class="text-[12px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-wider">날짜 <span class="text-red-400">*</span></label>
         <input v-model="form.startDate" type="date" required @change="clearSelection"
           :min="editBooking ? undefined : now.format('YYYY-MM-DD')"
-          class="w-full bg-white dark:bg-gray-800 border-2 border-slate-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-[14px] font-bold text-slate-700 dark:text-gray-100 outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-all cursor-pointer" />
+          class="w-full min-w-0 max-w-full box-border bg-white dark:bg-gray-800 border-2 border-slate-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-[14px] font-bold text-slate-700 dark:text-gray-100 outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-all cursor-pointer" />
       </div>
 
 
@@ -90,6 +90,13 @@
         <div class="flex items-center gap-2">
           <label class="text-[12px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-wider">시간 선택 <span class="text-red-400">*</span></label>
           <span class="text-[12px] font-semibold text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded-lg tabular-nums">현재 {{ fmtCurrentTime }}</span>
+        </div>
+
+        <!-- 드롭다운 오버레이 (모바일 닫기용) -->
+        <div v-if="startOpen || endOpen"
+          class="fixed inset-0 z-20"
+          @click="startOpen = false; endOpen = false"
+          @touchstart.passive="startOpen = false; endOpen = false">
         </div>
 
         <!-- 시작/종료 드롭다운 -->
@@ -118,6 +125,7 @@
               style="max-height:220px">
               <button v-for="s in startSlots" :key="s.val" type="button"
                 @mousedown.prevent="pickStart(s)"
+                @touchend.prevent="pickStart(s)"
                 class="w-full flex items-center justify-between px-4 py-2.5 text-[13px] transition-colors"
                 :class="s.val === selectedStart
                   ? 'bg-indigo-500 text-white font-black'
@@ -163,6 +171,7 @@
               style="max-height:220px">
               <button v-for="s in endSlots" :key="s.val" type="button"
                 @mousedown.prevent="pickEnd(s)"
+                @touchend.prevent="pickEnd(s)"
                 class="w-full flex items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors cursor-pointer"
                 :class="s.val === selectedEnd
                   ? 'bg-indigo-500 text-white font-black'
@@ -455,3 +464,11 @@ onMounted(async () => {
   await loadUsers();
 });
 </script>
+
+<style scoped>
+/* iOS에서 type="date" 네이티브 컨트롤이 부모 너비를 무시하는 문제 해결 */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+</style>

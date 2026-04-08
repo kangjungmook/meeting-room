@@ -31,15 +31,15 @@
       </header>
 
       <!-- 상단 통계 바 -->
-      <div class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-5 py-3 flex items-center gap-6 overflow-x-auto">
-        <div v-for="stat in stats" :key="stat.label" class="flex items-center gap-2.5 flex-shrink-0">
-          <span class="w-1.5 h-7 rounded-full flex-shrink-0" :style="{ background: stat.color }"></span>
-          <div>
-            <p class="text-[20px] font-bold leading-none tabular-nums"
-               :style="stat.active ? { color: stat.color } : {}"
-               :class="!stat.active ? 'text-gray-800 dark:text-gray-100' : ''">{{ stat.count }}</p>
-            <p class="text-[10.5px] text-gray-400 dark:text-gray-500 mt-0.5">{{ stat.label }}</p>
-          </div>
+      <div class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 flex items-center gap-1.5 overflow-x-auto">
+        <div v-for="stat in stats" :key="stat.label"
+             class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold flex-shrink-0 whitespace-nowrap transition-colors"
+             :class="stat.active
+               ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'
+               : 'text-gray-400 dark:text-gray-600'">
+          <span class="tabular-nums font-black"
+                :style="stat.active ? { color: stat.color } : {}">{{ stat.count }}</span>
+          <span>{{ stat.label }}</span>
         </div>
       </div>
 
@@ -250,81 +250,67 @@
           <template v-if="section.list.length > 0">
 
             <!-- 섹션 헤더 -->
-            <div class="sticky top-0 z-10 bg-[#F5F7FA] dark:bg-gray-950 px-5 py-2 flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
-              <span class="w-1.5 h-1.5 rounded-full" :style="{ background: section.color }"></span>
+            <div class="sticky top-0 z-10 bg-[#F5F7FA] dark:bg-gray-950 px-4 py-2.5 flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :style="{ background: section.color }"></span>
               <p class="text-[11px] font-bold uppercase tracking-widest" :style="{ color: section.color }">{{ section.label }}</p>
               <span class="text-[10.5px] font-bold text-white px-1.5 py-0.5 rounded-full" :style="{ background: section.color }">{{ section.list.length }}</span>
               <span class="text-[10px] text-gray-400 dark:text-gray-600 font-medium ml-1">{{ section.dateRange }}</span>
             </div>
 
-            <!-- 행 -->
-            <div v-for="b in section.list" :key="b.id"
-                 class="group flex items-center border-b border-gray-100 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-900 transition-colors cursor-pointer"
-                 :class="[section.past ? 'opacity-60' : '', detailBooking?.id === b.id ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : '']"
-                 @click="detailBooking = detailBooking?.id === b.id ? null : b">
+            <!-- 카드 그리드 -->
+            <div class="px-4 pb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div v-for="b in section.list" :key="b.id"
+                   class="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden cursor-pointer hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm transition-all"
+                   :class="section.past ? 'opacity-55' : ''"
+                   @click="detailBooking = detailBooking?.id === b.id ? null : b">
 
-              <!-- 컬러 바 -->
-              <div class="w-1 self-stretch flex-shrink-0" :style="{ background: getRoomColor(b.roomId) }"></div>
+                <!-- 카드 내용 -->
+                <div class="flex items-start gap-2.5 px-3 py-2.5">
+                  <!-- 왼쪽 컬러 바 -->
+                  <div class="w-0.5 self-stretch rounded-full flex-shrink-0 mt-0.5" :style="{ background: getRoomColor(b.roomId) }"></div>
 
-              <!-- 회의실 (모바일에선 숨김) -->
-              <div class="hidden sm:block w-[130px] flex-shrink-0 px-4 py-3.5">
-                <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full text-white"
-                      :style="{ background: getRoomColor(b.roomId) }">
-                  {{ getRoomName(b.roomId) }}
-                </span>
-              </div>
+                  <div class="flex-1 min-w-0">
+                    <!-- 회의실 + 역할 -->
+                    <div class="flex items-center justify-between gap-1 mb-1">
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white truncate"
+                            :style="{ background: getRoomColor(b.roomId) }">
+                        {{ getRoomName(b.roomId) }}
+                      </span>
+                      <span v-if="!section.past"
+                            :class="b.userId === currentUser.id
+                              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                              : 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'"
+                            class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0">
+                        {{ b.userId === currentUser.id ? '예약자' : '참석자' }}
+                      </span>
+                      <span v-else class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 flex-shrink-0">완료</span>
+                    </div>
 
-              <!-- 제목 + 모바일 서브정보 -->
-              <div class="flex-1 min-w-0 px-4 py-3.5">
-                <div class="flex items-center gap-1.5 mb-1 sm:hidden flex-wrap">
-                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                        :style="{ background: getRoomColor(b.roomId) }">
-                    {{ getRoomName(b.roomId) }}
-                  </span>
+                    <!-- 제목 -->
+                    <p class="text-[13px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">{{ b.title }}</p>
+
+                    <!-- 시간 + 예약자 + 액션 -->
+                    <div class="flex items-center justify-between mt-1 gap-1">
+                      <p class="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums truncate">{{ section.fmt(b) }}</p>
+                      <div v-if="!section.past && canEditOrCancel(b)" class="flex gap-1 flex-shrink-0">
+                        <button @click.stop="openEditModal(b); router.push('/main')"
+                                class="w-6 h-6 flex items-center justify-center rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-500 hover:bg-blue-100 transition-colors">
+                          <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                            <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                          </svg>
+                        </button>
+                        <button @click.stop="confirmCancel(b)"
+                                class="w-6 h-6 flex items-center justify-center rounded-md bg-red-50 dark:bg-red-900/30 text-red-400 hover:bg-red-100 transition-colors">
+                          <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+                            <path d="M2 4h10M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3.5 4l.5 8h6l.5-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p class="text-[13.5px] font-semibold text-gray-800 dark:text-gray-100 truncate">{{ b.title }}</p>
-                <p class="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5 tabular-nums">{{ section.fmt(b) }}</p>
-              </div>
 
-              <!-- 예약자 (모바일 숨김) -->
-              <div class="hidden sm:flex w-[120px] flex-shrink-0 px-4 py-3.5 items-center gap-1.5">
-                <svg width="10" height="10" viewBox="0 0 15 15" fill="none" class="text-gray-300 dark:text-gray-600 flex-shrink-0">
-                  <circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-                <p class="text-[12px] text-gray-500 dark:text-gray-400 truncate">{{ b.organizer }}</p>
               </div>
-
-              <!-- 역할 배지 -->
-              <div class="w-[76px] flex-shrink-0 px-3 py-3.5">
-                <span v-if="!section.past"
-                      :class="b.userId === currentUser.id
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                        : 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'"
-                      class="text-[10.5px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
-                  {{ b.userId === currentUser.id ? '예약자' : '참석자' }}
-                </span>
-                <span v-else class="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500">완료</span>
-              </div>
-
-              <!-- 액션 -->
-              <div class="w-[72px] flex-shrink-0 px-3 py-3.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <template v-if="!section.past && canEditOrCancel(b)">
-                  <button @click.stop="openEditModal(b); router.push('/main')"
-                          class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                      <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                  <button @click.stop="confirmCancel(b)"
-                          class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/30 text-red-400 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                      <path d="M2 4h10M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3.5 4l.5 8h6l.5-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                </template>
-              </div>
-
             </div>
 
           </template>

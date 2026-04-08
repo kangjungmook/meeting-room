@@ -79,15 +79,6 @@
             설정
           </button>
 
-          <a href="/manual.pdf" target="_blank" @click="closeDrawer()"
-             class="flex items-center gap-3 px-4 py-3.5 rounded-xl text-[14px] text-left w-full transition-colors font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
-            <svg class="text-gray-400 flex-shrink-0" width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="7.5" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M9 13v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M9 10c0-1.5 2.5-2 2.5-4a2.5 2.5 0 0 0-5 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
-            사용자 매뉴얼
-          </a>
         </nav>
 
         <!-- 하단 현황 -->

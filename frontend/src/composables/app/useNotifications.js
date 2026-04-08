@@ -75,11 +75,24 @@ export const notifPermission = ref(typeof Notification !== 'undefined' ? Notific
 
 const setupFcmMessaging = async () => {
   try {
-    const { getMessagingInstance, getToken, VAPID_KEY } = await import('../../firebase');
+    const { getMessagingInstance, getToken, onMessage, VAPID_KEY } = await import('../../firebase');
     const messaging = await getMessagingInstance();
     if (!messaging) return;
     const token = await getToken(messaging, { vapidKey: VAPID_KEY });
     if (token) await api.post('/users/fcm-token', { token });
+
+    // 포그라운드(앱 열려있을 때)에도 시스템 알림 표시
+    onMessage(messaging, (payload) => {
+      const title = payload.notification?.title ?? payload.data?.title ?? '알림';
+      const body  = payload.notification?.body  ?? payload.data?.body  ?? '';
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+        });
+      }
+    });
   } catch (e) {
     console.warn('FCM 토큰 발급 실패:', e.message);
   }

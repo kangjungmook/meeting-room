@@ -15,61 +15,13 @@
           <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
         </svg>
       </div>
-      <!-- 펼치기 -->
+      <!-- 햄버거 (펼치기) -->
       <button @click="sidebarCollapsed = false"
               class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 transition-colors">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M4 3l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
+          <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </button>
-      <!-- 내비게이션 아이콘 -->
-      <div class="flex flex-col gap-1">
-        <div class="relative group/tip">
-          <button @click="router.push('/main')"
-                  :class="['w-9 h-9 flex items-center justify-center rounded-lg transition-colors',
-                    route.path === '/main'
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800']">
-            <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
-              <rect x="1.5" y="3.5" width="15" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M5.5 1.5v4M12.5 1.5v4M1.5 8h15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div class="pointer-events-none absolute left-full inset-y-0 flex items-center pl-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
-            <div class="bg-gray-900 dark:bg-gray-700 text-white text-[12px] font-semibold px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">예약 현황</div>
-          </div>
-        </div>
-        <div class="relative group/tip">
-          <button @click="router.push('/my-bookings')"
-                  :class="['w-9 h-9 flex items-center justify-center rounded-lg transition-colors',
-                    route.path === '/my-bookings'
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800']">
-            <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="6" r="3.5" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M2 16c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div class="pointer-events-none absolute left-full inset-y-0 flex items-center pl-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
-            <div class="bg-gray-900 dark:bg-gray-700 text-white text-[12px] font-semibold px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">내 회의</div>
-          </div>
-        </div>
-        <div class="relative group/tip">
-          <button @click="router.push('/settings')"
-                  :class="['w-9 h-9 flex items-center justify-center rounded-lg transition-colors',
-                    route.path === '/settings'
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800']">
-            <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
-              <path d="M9 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M14.5 9c0-.4 0-.8-.1-1.2l1.7-1.3-1.5-2.6-2 .8a6 6 0 0 0-2.1-1.2L10 1.5H7.5l-.5 2A6 6 0 0 0 4.9 4.7l-2-.8L1.4 6.5l1.7 1.3A6 6 0 0 0 3 9c0 .4 0 .8.1 1.2L1.4 11.5l1.5 2.6 2-.8a6 6 0 0 0 2.1 1.2l.5 2H10l.5-2a6 6 0 0 0 2.1-1.2l2 .8 1.5-2.6-1.7-1.3c.1-.4.1-.8.1-1.2z" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-          </button>
-          <div class="pointer-events-none absolute left-full inset-y-0 flex items-center pl-2.5 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
-            <div class="bg-gray-900 dark:bg-gray-700 text-white text-[12px] font-semibold px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">설정</div>
-          </div>
-        </div>
-      </div>
 
       <!-- 새 예약 버튼 -->
       <button @click="openNewBooking"
@@ -94,14 +46,6 @@
             <path d="M14.5 9c0-.4 0-.8-.1-1.2l1.7-1.3-1.5-2.6-2 .8a6 6 0 0 0-2.1-1.2L10 1.5H7.5l-.5 2A6 6 0 0 0 4.9 4.7l-2-.8L1.4 6.5l1.7 1.3A6 6 0 0 0 3 9c0 .4 0 .8.1 1.2L1.4 11.5l1.5 2.6 2-.8a6 6 0 0 0 2.1 1.2l.5 2H10l.5-2a6 6 0 0 0 2.1-1.2l2 .8 1.5-2.6-1.7-1.3c.1-.4.1-.8.1-1.2z" stroke="currentColor" stroke-width="1.5"/>
           </svg>
         </button>
-        <a href="/manual.pdf" target="_blank" title="사용자 매뉴얼"
-           class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <svg width="12" height="12" viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="7.5" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M9 13v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M9 10c0-1.5 2.5-2 2.5-4a2.5 2.5 0 0 0-5 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-        </a>
       </div>
     </div>
 
@@ -123,8 +67,8 @@
         </div>
         <button @click="sidebarCollapsed = true"
                 class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 transition-colors">
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-            <path d="M10 3L5 7l5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
+            <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </button>
       </div>
@@ -210,15 +154,6 @@
             <svg v-else width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M15 10.5A7 7 0 0 1 7.5 3a7 7 0 0 0 7.5 7.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
         </div>
-        <a href="/manual.pdf" target="_blank"
-           class="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
-          <svg width="11" height="11" viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="7.5" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M9 13v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M9 10c0-1.5 2.5-2 2.5-4a2.5 2.5 0 0 0-5 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-          사용자 매뉴얼
-        </a>
       </div>
 
     </div>

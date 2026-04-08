@@ -1,6 +1,37 @@
 <template>
   <div class="flex h-screen bg-[#F5F7FA] dark:bg-gray-950 font-sans text-gray-900 dark:text-gray-50 overflow-hidden">
 
+    <!-- 미저장 경고 다이얼로그 -->
+    <transition name="fade">
+      <div v-if="showLeaveConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="onLeaveCancel"></div>
+        <div class="relative w-full max-w-[320px] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden">
+          <!-- 아이콘 -->
+          <div class="flex flex-col items-center pt-7 pb-4 px-6">
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mb-4">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="text-amber-500">
+                <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p class="text-[15px] font-bold text-gray-800 dark:text-gray-100 text-center">저장하지 않고 나가시겠어요?</p>
+            <p class="text-[13px] text-gray-400 dark:text-gray-500 text-center mt-1.5 leading-relaxed">변경한 알림 설정이 저장되지 않습니다.</p>
+          </div>
+          <!-- 버튼 -->
+          <div class="flex border-t border-gray-100 dark:border-gray-800">
+            <button @click="onLeaveCancel"
+                    class="flex-1 py-3.5 text-[14px] font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              취소
+            </button>
+            <div class="w-px bg-gray-100 dark:bg-gray-800"></div>
+            <button @click="onLeaveConfirm"
+                    class="flex-1 py-3.5 text-[14px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+              나가기
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <AppSidebar v-if="!isMobile" />
 
     <div class="flex-1 flex flex-col overflow-hidden min-w-0">
@@ -16,10 +47,14 @@
           </button>
           <h1 class="text-[15px] font-semibold text-gray-800 dark:text-gray-100">설정</h1>
         </div>
-        <button @click="handleSave"
-                class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold transition-colors">
-          저장
-        </button>
+        <!-- 모바일 전용 저장 버튼 -->
+        <transition name="fade">
+          <button v-if="isMobile && activeTab === 'notifications'"
+                  @click="handleSave"
+                  class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold transition-colors">
+            저장
+          </button>
+        </transition>
       </header>
 
       <main class="flex-1 overflow-y-auto custom-scrollbar flex flex-col min-h-0">
@@ -93,7 +128,24 @@
             </div>
 
             <!-- 알림 탭 -->
-            <div v-if="activeTab === 'notifications'" class="px-6 py-6 max-w-2xl flex flex-col gap-7">
+            <div v-if="activeTab === 'notifications'" class="flex flex-col min-h-full">
+              <!-- 데스크탑 전용: 상단 sticky 저장 바 -->
+              <div v-if="!isMobile"
+                   class="sticky top-0 z-10 flex items-center justify-between px-6 py-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+                <p class="text-[12.5px]">
+                  <span v-if="isDirty" class="text-amber-500 font-semibold">● 저장되지 않은 변경사항</span>
+                  <span v-else class="text-gray-300 dark:text-gray-600">저장됨</span>
+                </p>
+                <button @click="handleSave"
+                        :class="isDirty
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'"
+                        class="px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all"
+                        :disabled="!isDirty">
+                  저장
+                </button>
+              </div>
+            <div class="px-6 py-6 flex flex-col gap-7 max-w-2xl">
               <div>
                 <h2 class="text-[15px] font-bold text-gray-800 dark:text-gray-100">알림 설정</h2>
                 <p class="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">알림 수신 방식을 설정합니다</p>
@@ -177,19 +229,51 @@
                 </div>
               </div>
             </div>
+            </div>
+
+            <!-- 도움말 탭 -->
+            <div v-if="activeTab === 'help'" class="px-6 py-6 max-w-2xl flex flex-col gap-6">
+              <div>
+                <h2 class="text-[15px] font-bold text-gray-800 dark:text-gray-100">도움말</h2>
+                <p class="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">시스템 사용 방법을 안내합니다</p>
+              </div>
+              <div class="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden bg-white dark:bg-gray-900">
+                <a href="/manual.pdf" target="_blank"
+                   class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" class="text-blue-500">
+                        <path d="M4 2h7l4 4v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                        <path d="M11 2v4h4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                        <path d="M6 9h6M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="text-[13.5px] font-semibold text-gray-700 dark:text-gray-200">사용자 매뉴얼</p>
+                      <p class="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">회의실 예약 시스템 이용 가이드 (PDF)</p>
+                    </div>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="text-gray-300 dark:text-gray-600 group-hover:text-blue-400 transition-colors flex-shrink-0">
+                    <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
 
           </div>
         </div>
 
       </main>
+
+
     </div>
     <ToastContainer />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useApp } from '../composables/useApp';
 import AppSidebar from './layout/AppSidebar.vue';
 import ToastContainer from './layout/ToastContainer.vue';
@@ -199,10 +283,46 @@ const router = useRouter();
 const { isMobile, currentUser, userNotifPrefs, saveNotifPrefs, darkMode, toggleDarkMode,
         connectSse, disconnectSse, applyNotifPrefs } = useApp();
 
+// ── 미저장 변경 감지 ──────────────────────────────────────
+const isDirty    = ref(false);
+const savedPrefs = ref(null);
+
 onMounted(() => {
   connectSse();
-  api.get('/users/notification-preference').then(res => applyNotifPrefs(res.data)).catch(() => {});
+  api.get('/users/notification-preference').then(res => {
+    applyNotifPrefs(res.data);
+    savedPrefs.value = JSON.stringify({ ...userNotifPrefs });
+  }).catch(() => {});
 });
+
+watch(userNotifPrefs, () => {
+  if (savedPrefs.value === null) return;
+  isDirty.value = JSON.stringify({ ...userNotifPrefs }) !== savedPrefs.value;
+}, { deep: true });
+
+// ── 이탈 확인 다이얼로그 ──────────────────────────────────
+const showLeaveConfirm = ref(false);
+let _leaveNext = null;
+
+onBeforeRouteLeave((to, from, next) => {
+  if (isDirty.value) {
+    showLeaveConfirm.value = true;
+    _leaveNext = next;
+  } else {
+    next();
+  }
+});
+
+const onLeaveConfirm = () => {
+  showLeaveConfirm.value = false;
+  isDirty.value = false;
+  _leaveNext?.();
+};
+
+const onLeaveCancel = () => {
+  showLeaveConfirm.value = false;
+  _leaveNext?.(false);
+};
 
 onUnmounted(() => { disconnectSse(); });
 
@@ -243,6 +363,11 @@ const tabs = [
     label: '알림',
     icon: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="color:inherit"><path d="M7.5 1a4.5 4.5 0 0 1 4.5 4.5c0 2.5.5 3.5 1 4.5H2c.5-1 1-2 1-4.5A4.5 4.5 0 0 1 7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 10a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
   },
+  {
+    key: 'help',
+    label: '도움말',
+    icon: `<svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="color:inherit"><circle cx="9" cy="9" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M9 13v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 10c0-1.5 2.5-2 2.5-4a2.5 2.5 0 0 0-5 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  },
 ];
 
 const pushItems = [
@@ -259,6 +384,8 @@ const toastItems = [
 
 const handleSave = async () => {
   await saveNotifPrefs();
+  savedPrefs.value = JSON.stringify({ ...userNotifPrefs });
+  isDirty.value = false;
 };
 </script>
 
@@ -266,4 +393,10 @@ const handleSave = async () => {
 .custom-scrollbar::-webkit-scrollbar       { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
+.fade-enter-from,  .fade-leave-to      { opacity: 0; }
+
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.2s ease; }
+.slide-up-enter-from,   .slide-up-leave-to     { opacity: 0; transform: translateY(8px); }
 </style>
