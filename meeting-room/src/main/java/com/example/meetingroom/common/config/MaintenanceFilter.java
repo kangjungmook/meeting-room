@@ -33,7 +33,6 @@ public class MaintenanceFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // 인증/관리자/SSE/정적 경로는 점검 모드 제외
         if (path.startsWith("/api/auth/") || path.startsWith("/api/admin/")
                 || path.startsWith("/api/sse/") || path.startsWith("/kiosk")) {
             filterChain.doFilter(request, response);

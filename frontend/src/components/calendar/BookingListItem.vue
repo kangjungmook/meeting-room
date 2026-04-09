@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden flex shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-800 group">
+  <!-- flat=true: 외부 카드 없이 행(row)으로만 렌더 -->
+  <div :class="flat
+    ? 'flex border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50/60 dark:hover:bg-gray-800/30 transition-colors'
+    : 'bg-white dark:bg-gray-900 rounded-2xl overflow-hidden flex shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-gray-800'">
 
     <!-- 좌측 컬러 액센트 바 -->
     <div class="w-[5px] flex-shrink-0" :style="{ background: getRoomColor(booking.roomId) }"></div>
@@ -72,8 +75,9 @@ import { useApp } from '../../composables/useApp';
 import dayjs from 'dayjs';
 
 defineProps({
-  booking:  { type: Object, required: true },
+  booking:  { type: Object,  required: true },
   showDate: { type: Boolean, default: false },
+  flat:     { type: Boolean, default: false },
 });
 
 const { getRoomColor, getRoomName, resolveAttendees, chipMinutes } = useApp();

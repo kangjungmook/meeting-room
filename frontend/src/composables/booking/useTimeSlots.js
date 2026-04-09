@@ -120,7 +120,6 @@ export function useTimeSlots(form, bookings, editBooking) {
   const onEndInput = (hhmm, clearError) => {
     clearError?.();
     if (!hhmm) { selectedEnd.value = null; return; }
-    if (selectedStart.value && hhmm <= selectedStart.value) return;
     selectedEnd.value = hhmm;
     endOpen.value = false;
   };
@@ -194,6 +193,11 @@ export function useTimeSlots(form, bookings, editBooking) {
 
   const hasConflict = computed(() => conflictingBookings.value.length > 0);
 
+  // ── 시작 ≥ 종료 시간 체크 (같거나 종료가 더 이른 경우) ──────
+  const isSameTime = computed(() =>
+    !!selectedStart.value && !!selectedEnd.value && selectedEnd.value <= selectedStart.value
+  );
+
   // ── 닫기 지연 헬퍼 ────────────────────────────────────────────
   const closeStartDelayed = () => { setTimeout(() => { startOpen.value = false; }, 150); };
   const closeEndDelayed   = () => { setTimeout(() => { endOpen.value   = false; }, 150); };
@@ -209,7 +213,7 @@ export function useTimeSlots(form, bookings, editBooking) {
     onStartInput, onEndInput,
     durationFrom, durationLabel, activeDuration,
     quickDurations, setDuration,
-    conflictingBookings, hasConflict,
+    conflictingBookings, hasConflict, isSameTime,
     clearSelection, closeStartDelayed, closeEndDelayed,
   };
 }

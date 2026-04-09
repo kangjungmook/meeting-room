@@ -1,5 +1,5 @@
-<template>
-  <div class="flex flex-col h-full">
+﻿<template>
+  <div class="flex flex-col h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
 
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-gray-700 flex-shrink-0">
@@ -24,7 +24,7 @@
     </div>
 
     <!-- Form -->
-    <form @submit.prevent="submitBooking" class="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-5 py-4 flex flex-col gap-4 custom-scrollbar" style="touch-action: pan-y;">
+    <form @submit.prevent="submitBooking" class="flex-1 px-5 py-4 flex flex-col gap-4" style="touch-action: pan-y;">
 
       <!-- 예약자 배지 -->
       <div class="flex items-center gap-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
@@ -78,18 +78,76 @@
       <!-- 날짜 -->
       <div class="flex flex-col gap-1.5 overflow-hidden">
         <label class="text-[12px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-wider">날짜 <span class="text-red-400">*</span></label>
-        <input v-model="form.startDate" type="date" required @change="clearSelection"
-          :min="editBooking ? undefined : now.format('YYYY-MM-DD')"
-          class="w-full min-w-0 max-w-full box-border bg-white dark:bg-gray-800 border-2 border-slate-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-[14px] font-bold text-slate-700 dark:text-gray-100 outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-all cursor-pointer" />
+        <DatePicker
+          v-model="form.startDate"
+          :min="editBooking ? '' : now.format('YYYY-MM-DD')"
+          placeholder="날짜 선택"
+          @update:modelValue="clearSelection"
+        />
       </div>
 
+      <!-- 반복 (날짜 바로 아래, 새 예약만) -->
+      <div v-if="!editBooking" class="flex flex-col gap-2">
+        <label class="text-[12px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-wider">반복</label>
+
+        <!-- 타입 선택 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+          <button v-for="opt in recurTypes" :key="opt.val" type="button"
+            @click="recur.type = opt.val"
+            class="py-2 rounded-xl text-[12.5px] font-bold border-2 transition-all"
+            :class="recur.type === opt.val
+              ? 'border-indigo-400 bg-indigo-500 text-white'
+              : 'border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-slate-500 dark:text-gray-400 hover:border-indigo-300 hover:text-indigo-500'">
+            {{ opt.label }}
+          </button>
+        </div>
+
+        <!-- 반복 설정 + 날짜 목록 -->
+        <div v-if="recur.type !== 'none'" class="flex flex-col gap-2 px-3 py-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
+
+          <!-- 종료일 -->
+          <div class="flex flex-col gap-2 lg:flex-row lg:items-center">
+            <span class="text-[12px] text-slate-500 dark:text-gray-400 font-semibold whitespace-nowrap">종료일</span>
+            <div class="flex-1 min-w-0 w-full">
+              <DatePicker v-model="recur.endDate" :min="form.startDate" placeholder="종료일 선택" />
+            </div>
+            <span v-if="generatedDates.length" class="text-[11px] text-indigo-400 font-bold whitespace-nowrap self-end lg:self-auto">총 {{ selectedDates.length }}회</span>
+          </div>
+
+          <!-- 날짜 목록 -->
+          <div v-if="generatedDates.length > 0" class="flex flex-col gap-1">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-0.5">
+              <span class="text-[11px] font-bold text-indigo-500 dark:text-indigo-400">예약될 날짜</span>
+              <button type="button" @click="toggleAllDates"
+                class="text-[11px] font-semibold text-indigo-400 hover:text-indigo-600 transition-colors self-start sm:self-auto">
+                {{ selectedDates.length === generatedDates.length ? '전체 해제' : '전체 선택' }}
+              </button>
+            </div>
+            <div class="flex flex-col gap-0.5 min-h-0 max-h-[180px] overflow-y-auto custom-scrollbar">
+              <label v-for="d in generatedDates" :key="d.date"
+                class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors"
+                :class="d.checked ? 'bg-white dark:bg-gray-800' : 'bg-slate-100/50 dark:bg-gray-700/30'">
+                <input type="checkbox" v-model="d.checked" class="accent-indigo-500 w-3.5 h-3.5 flex-shrink-0" />
+                <span class="text-[12.5px] font-bold flex-1"
+                  :class="d.checked ? 'text-slate-700 dark:text-gray-200' : 'text-slate-300 dark:text-gray-600 line-through'">
+                  {{ d.label }}
+                </span>
+                <span class="text-[11px] font-semibold"
+                  :class="d.checked ? 'text-indigo-400' : 'text-slate-300 dark:text-gray-600'">
+                  {{ d.dow }}
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- 시간 선택 -->
       <div class="flex flex-col gap-2">
         <!-- 헤더: 현재 시각 -->
         <div class="flex items-center gap-2">
           <label class="text-[12px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-wider">시간 선택 <span class="text-red-400">*</span></label>
-          <span class="text-[12px] font-semibold text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded-lg tabular-nums">현재 {{ fmtCurrentTime }}</span>
+          <span class="text-[12px] font-semibold text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded-lg tabular-nums">현재 {{ liveTime }}</span>
         </div>
 
         <!-- 드롭다운 오버레이 (모바일 닫기용) -->
@@ -108,7 +166,7 @@
             <div class="flex border-2 rounded-xl overflow-hidden transition-all"
               :class="startOpen || selectedStart ? 'border-indigo-400' : 'border-slate-200 dark:border-gray-600'">
               <input type="time" :value="selectedStart || ''" min="06:00" max="20:30"
-                @change="e => onStartInput(e.target.value)"
+                @change="e => { onStartInput(e.target.value); e.target.value = selectedStart || ''; }"
                 class="flex-1 bg-white dark:bg-gray-800 px-3 py-2.5 text-[14px] font-bold outline-none min-w-0"
                 :class="selectedStart ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 dark:text-gray-600'" />
               <button type="button"
@@ -219,6 +277,14 @@
             <span class="text-[11px] text-orange-500 font-semibold truncate">{{ b.title }}</span>
           </div>
         </div>
+
+        <!-- 동일 시간 경고 -->
+        <div v-if="isSameTime" class="flex items-center gap-2 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/40 rounded-xl">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
+            <path d="M8 5v4M8 11h.01M2 8a6 6 0 1 0 12 0A6 6 0 0 0 2 8z" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="text-[12px] font-bold text-red-500">{{ timeErrorMsg }}</span>
+        </div>
       </div>
 
       <!-- 참석자 -->
@@ -291,6 +357,7 @@
       </div>
 
 
+
       <!-- 에러 -->
       <div v-if="errorMsg && !hasConflict" class="flex items-center gap-2 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/40 rounded-xl">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
@@ -308,9 +375,7 @@
         <button v-if="!editBooking" type="button" @click="resetForm"
           class="px-4 py-3 rounded-xl bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-400 dark:text-gray-400 text-[13px] font-bold transition-all"
           title="입력 초기화">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M2 8a6 6 0 1 0 1.5-4M2 4v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <AppIcon name="refresh" :size="14" />
         </button>
         <button type="submit" :disabled="!canSubmit || isSubmitting"
           :class="[
@@ -319,7 +384,7 @@
               ? 'bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-gray-500 cursor-not-allowed'
               : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-100 dark:shadow-indigo-900/30 active:scale-[0.99]'
           ]">
-          {{ isSubmitting ? (editBooking ? '수정 중...' : '예약 중...') : canSubmit ? (editBooking ? '수정 완료' : '예약 확정') : !form.roomId ? '회의실을 선택해주세요' : !form.title ? '회의 제목을 입력해주세요' : selectedStart && !selectedEnd ? '종료 시간을 선택해주세요' : !selectedStart ? '시간을 선택해주세요' : (editBooking ? '수정 완료' : '예약 확정') }}
+          {{ isSubmitting ? (editBooking ? '수정 중...' : '예약 중...') : canSubmit ? (editBooking ? '수정 완료' : '예약 확정') : !form.roomId ? '회의실을 선택해주세요' : !form.title ? '회의 제목을 입력해주세요' : isSameTime ? '시작·종료 시간이 같습니다' : selectedStart && !selectedEnd ? '종료 시간을 선택해주세요' : !selectedStart ? '시간을 선택해주세요' : (editBooking ? '수정 완료' : '예약 확정') }}
         </button>
       </div>
 
@@ -328,9 +393,11 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, toRef, onMounted } from 'vue';
+import { reactive, ref, computed, watch, toRef, onMounted, onUnmounted } from 'vue';
 import dayjs from 'dayjs';
 import api from '../api';
+import AppIcon from './icons/AppIcon.vue';
+import DatePicker from './ui/DatePicker.vue';
 import { currentUser } from '../composables/useApp';
 import { useTimeSlots }      from '../composables/booking/useTimeSlots';
 import { useAttendeeSearch } from '../composables/booking/useAttendeeSearch';
@@ -369,7 +436,7 @@ const {
   onStartInput: _onStartInput, onEndInput: _onEndInput,
   durationFrom, durationLabel, activeDuration,
   quickDurations, setDuration,
-  conflictingBookings, hasConflict,
+  conflictingBookings, hasConflict, isSameTime,
   clearSelection, closeStartDelayed, closeEndDelayed,
 } = useTimeSlots(form, toRef(props, 'bookings'), editBooking);
 
@@ -399,11 +466,62 @@ const {
   removeAttendee, closeSuggestions, closeSuggestionsDelayed,
 } = useAttendeeSearch(form, userId, editBooking);
 
+// ── 반복 예약 ────────────────────────────────────────────────
+const recurTypes = [
+  { val: 'none',    label: '없음' },
+  { val: 'weekly',  label: '매주' },
+  { val: 'monthly', label: '매월' },
+  { val: 'yearly',  label: '매년' },
+];
+const recur = reactive({ type: 'none', endDate: '' });
+const DOW_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+
+const recurUnit = computed(() =>
+  recur.type === 'weekly' ? 'week' : recur.type === 'monthly' ? 'month' : 'year'
+);
+
+// 체크박스 포함 날짜 목록
+const generatedDates = ref([]);
+
+const buildDates = () => {
+  if (recur.type === 'none' || !form.startDate || !recur.endDate) { generatedDates.value = []; return; }
+  const result = [];
+  let cur = dayjs(form.startDate);
+  const end = dayjs(recur.endDate);
+  while (!cur.isAfter(end) && result.length < 52) {
+    result.push({ date: cur.format('YYYY-MM-DD'), label: cur.format('YYYY년 MM월 DD일'), dow: DOW_LABELS[cur.day()] + '요일', checked: true });
+    cur = cur.add(1, recurUnit.value);
+  }
+  generatedDates.value = result;
+};
+
+watch(() => [recur.type, recur.endDate, form.startDate], buildDates, { immediate: true });
+
+const selectedDates = computed(() => generatedDates.value.filter(d => d.checked).map(d => d.date));
+
+const toggleAllDates = () => {
+  const allChecked = generatedDates.value.every(d => d.checked);
+  generatedDates.value.forEach(d => { d.checked = !allChecked; });
+};
+
+const generateDates = () => {
+  if (recur.type === 'none') return [form.startDate];
+  return selectedDates.value.length ? selectedDates.value : [form.startDate];
+};
+
+// ── 시간 오류 메시지 ─────────────────────────────────────────
+const timeErrorMsg = computed(() => {
+  if (!selectedStart.value || !selectedEnd.value) return '';
+  if (selectedStart.value === selectedEnd.value) return '시작 시간과 종료 시간이 같을 수 없습니다';
+  if (selectedEnd.value < selectedStart.value)   return '종료 시간은 시작 시간보다 이후여야 합니다';
+  return '';
+});
+
 // ── 제출 가능 여부 ────────────────────────────────────────────
 const isPastDate = computed(() => !editBooking && dayjs(form.startDate).isBefore(now, 'day'));
 const canSubmit  = computed(() =>
   !!form.roomId && !!selectedStart.value && !!selectedEnd.value &&
-  !!form.title && !isPastDate.value && !hasConflict.value
+  !!form.title && !isPastDate.value && !hasConflict.value && !isSameTime.value
 );
 
 const isSubmitting = ref(false);
@@ -412,7 +530,10 @@ const submitBooking = async () => {
   if (isSubmitting.value) return;
   errorMsg.value = '';
   if (!selectedStart.value || !selectedEnd.value) { errorMsg.value = '시간을 선택해주세요.'; return; }
-  if (isPastDate.value) { errorMsg.value = '과거 날짜에는 예약할 수 없습니다.'; return; }
+  if (selectedStart.value === selectedEnd.value) { errorMsg.value = '시작 시간과 종료 시간이 같을 수 없습니다.'; return; }
+  if (selectedEnd.value < selectedStart.value) { errorMsg.value = '종료 시간은 시작 시간보다 이후여야 합니다.'; return; }
+  if (isPastDate.value) { errorMsg.value = '지나간 날짜는 예약할 수 없습니다.'; return; }
+
   if (dayjs(form.startDate).isSame(now, 'day')) {
     const [hh, mm] = selectedStart.value.split(':').map(Number);
     if (!dayjs(form.startDate).hour(hh).minute(mm).isAfter(now)) {
@@ -421,18 +542,33 @@ const submitBooking = async () => {
   }
   isSubmitting.value = true;
   try {
-    const payload = {
-      roomId:      form.roomId,
-      title:       form.title,
-      organizer:   userName,
-      attendeeIds: form.attendeeIds.length ? form.attendeeIds : null,
-      externalAttendees: form.externalAttendees.length ? form.externalAttendees : null,
-      description: form.description || null,
-      startTime:   `${form.startDate}T${selectedStart.value}:00`,
-      endTime:     `${form.startDate}T${selectedEnd.value}:00`,
-    };
-    if (editBooking) await api.put(`/bookings/${editBooking.id}`, payload);
-    else             await api.post('/bookings', payload);
+    if (editBooking) {
+      const payload = {
+        roomId:      form.roomId,
+        title:       form.title,
+        organizer:   userName,
+        attendeeIds: form.attendeeIds.length ? form.attendeeIds : null,
+        externalAttendees: form.externalAttendees.length ? form.externalAttendees : null,
+        description: form.description || null,
+        startTime:   `${form.startDate}T${selectedStart.value}:00`,
+        endTime:     `${form.startDate}T${selectedEnd.value}:00`,
+      };
+      await api.put(`/bookings/${editBooking.id}`, payload);
+    } else {
+      const dates = generateDates();
+      for (const date of dates) {
+        await api.post('/bookings', {
+          roomId:      form.roomId,
+          title:       form.title,
+          organizer:   userName,
+          attendeeIds: form.attendeeIds.length ? form.attendeeIds : null,
+          externalAttendees: form.externalAttendees.length ? form.externalAttendees : null,
+          description: form.description || null,
+          startTime:   `${date}T${selectedStart.value}:00`,
+          endTime:     `${date}T${selectedEnd.value}:00`,
+        });
+      }
+    }
     emit('refresh');
     emit('close');
   } catch (e) {
@@ -456,19 +592,21 @@ const resetForm = () => {
   attendeeQuery.value     = '';
   suggestions.value       = [];
   errorMsg.value          = '';
+  recur.type    = 'none';
+  recur.endDate = '';
 };
+
+// ── 실시간 시계 (초 단위) ─────────────────────────────────────
+const liveTime = ref(dayjs().format('HH:mm:ss'));
+let _clockTimer = null;
 
 // ── 마운트 ────────────────────────────────────────────────────
 onMounted(async () => {
   if (!form.roomId && props.rooms?.length) form.roomId = props.rooms[0].id;
   await loadUsers();
+  _clockTimer = setInterval(() => { liveTime.value = dayjs().format('HH:mm:ss'); }, 1000);
 });
+
+onUnmounted(() => { clearInterval(_clockTimer); });
 </script>
 
-<style scoped>
-/* iOS에서 type="date" 네이티브 컨트롤이 부모 너비를 무시하는 문제 해결 */
-input[type="date"] {
-  -webkit-appearance: none;
-  appearance: none;
-}
-</style>

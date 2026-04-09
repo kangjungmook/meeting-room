@@ -6,9 +6,7 @@
       <div class="px-6 py-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 7v4M9 14h.01M2 15h14L9 2 2 15z" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
+            <AppIcon name="alert-circle" :size="18" class="text-red-500" />
             <h2 class="text-[16px] font-black text-red-600">전체 초기화</h2>
           </div>
           <p class="text-[13px] text-slate-700 leading-relaxed">
@@ -18,7 +16,7 @@
         </div>
         <button @click="fullResetModal.show = true"
           class="flex-shrink-0 flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-xl text-[14px] font-black transition-all shadow-sm">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M5 4V2.5h6V4M4 4l.5 9h7l.5-9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <AppIcon name="trash" :size="16" />
           전체 초기화
         </button>
       </div>
@@ -45,7 +43,7 @@
           </div>
           <button @click="confirmReset('bookings')"
             class="flex items-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[13px] font-bold transition-all">
-            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M5 4V2.5h5V4M6 7v4M9 7v4M3 4l.5 8.5a1 1 0 0 0 1 .5h7a1 1 0 0 0 1-.5L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <AppIcon name="trash" :size="14" />
             초기화
           </button>
         </div>
@@ -69,7 +67,7 @@
           </div>
           <button @click="confirmReset('logs')"
             class="flex items-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-[13px] font-bold transition-all">
-            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M5 4V2.5h5V4M6 7v4M9 7v4M3 4l.5 8.5a1 1 0 0 0 1 .5h7a1 1 0 0 0 1-.5L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <AppIcon name="trash" :size="14" />
             초기화
           </button>
         </div>
@@ -93,7 +91,7 @@
           </div>
           <button @click="confirmReset('users')"
             class="flex items-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[13px] font-bold transition-all">
-            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M5 4V2.5h5V4M6 7v4M9 7v4M3 4l.5 8.5a1 1 0 0 0 1 .5h7a1 1 0 0 0 1-.5L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <AppIcon name="trash" :size="14" />
             초기화
           </button>
         </div>
@@ -137,11 +135,7 @@
         <div class="px-7 pt-7 pb-5">
           <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
                :class="resetModal.target === 'notif' ? 'bg-indigo-50' : 'bg-red-50'">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M11 8v4M11 15h.01M3 11a8 8 0 1 0 16 0 8 8 0 0 0-16 0z"
-                    :stroke="resetModal.target === 'notif' ? '#6366f1' : '#ef4444'"
-                    stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
+            <AppIcon name="alert-circle" :size="22" :class="resetModal.target === 'notif' ? 'text-indigo-500' : 'text-red-500'" />
           </div>
           <h3 class="text-[17px] font-bold text-slate-800">
             {{ resetTargetLabel }}을 초기화할까요?
@@ -170,7 +164,7 @@
       <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-red-200 overflow-hidden">
         <div class="bg-red-500 px-6 py-5 flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 8v4M10 15h.01M3 17h14L10 3 3 17z" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+            <AppIcon name="alert-circle" :size="20" class="text-white" />
           </div>
           <div>
             <h3 class="text-[17px] font-black text-white">전체 초기화</h3>
@@ -181,17 +175,17 @@
           <p class="text-[14px] text-slate-600 leading-relaxed mb-4">아래 항목이 <strong class="text-red-500">모두 초기화</strong>됩니다:</p>
           <div class="flex flex-col gap-2 mb-5">
             <div class="flex items-center gap-2.5 px-3 py-2.5 bg-red-50 rounded-xl">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M4.5 3.5V2.5h5v1M3.5 3.5l.5 7.5h6l.5-7.5" stroke="#ef4444" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <AppIcon name="trash" :size="14" class="text-red-500" />
               <span class="text-[13px] font-semibold text-red-600">예약 전체</span>
               <span class="ml-auto text-[12px] text-red-400 font-bold">{{ allBookings.length }}건</span>
             </div>
             <div class="flex items-center gap-2.5 px-3 py-2.5 bg-red-50 rounded-xl">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M4.5 3.5V2.5h5v1M3.5 3.5l.5 7.5h6l.5-7.5" stroke="#ef4444" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <AppIcon name="trash" :size="14" class="text-red-500" />
               <span class="text-[13px] font-semibold text-red-600">관리 로그 전체</span>
               <span class="ml-auto text-[12px] text-red-400 font-bold">{{ logs.length }}건</span>
             </div>
             <div class="flex items-center gap-2.5 px-3 py-2.5 bg-red-50 rounded-xl">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M4.5 3.5V2.5h5v1M3.5 3.5l.5 7.5h6l.5-7.5" stroke="#ef4444" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <AppIcon name="trash" :size="14" class="text-red-500" />
               <span class="text-[13px] font-semibold text-red-600">일반 회원 전체</span>
               <span class="ml-auto text-[12px] text-red-400 font-bold">{{ nonAdminCount }}명</span>
             </div>
@@ -201,7 +195,7 @@
               <span class="ml-auto text-[12px] text-orange-400 font-bold">기본값 복원</span>
             </div>
             <div class="flex items-center gap-2.5 px-3 py-2.5 bg-emerald-50 rounded-xl">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3 6-6" stroke="#10b981" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <AppIcon name="check" :size="14" class="text-emerald-500" />
               <span class="text-[13px] font-semibold text-emerald-600">ADMIN 계정 · 회의실</span>
               <span class="ml-auto text-[12px] text-emerald-500 font-bold">유지됨</span>
             </div>
@@ -229,6 +223,7 @@
 import { reactive, computed, ref } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
 import { showAdminToast } from '../../composables/admin/useAdminToast';
+import AppIcon from '../icons/AppIcon.vue';
 
 const {
   allBookings, logs, users, notifSetting,

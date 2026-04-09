@@ -1,0 +1,87 @@
+<template>
+  <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0">
+    <div class="overflow-x-auto">
+      <div style="min-width: 620px">
+        <div class="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <div class="w-28 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 sticky left-0 z-20 bg-gray-50 dark:bg-gray-800"></div>
+          <div v-for="day in weekDays" :key="day.format()"
+               class="flex-1 flex flex-col items-center gap-1 py-2.5 border-r border-gray-100 dark:border-gray-800 last:border-r-0 cursor-pointer select-none"
+               :class="day.day() === 0 ? 'bg-red-50/50 dark:bg-red-900/10' : day.day() === 6 ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''"
+               @click.stop="goToDay(day)">
+            <span class="text-[10px] font-bold uppercase tracking-wider"
+                  :style="day.day() === 0 ? { color: '#f87171' } : day.day() === 6 ? { color: '#60a5fa' } : { color: '#94a3b8' }">
+              {{ day.format('ddd') }}
+            </span>
+            <span :class="[
+                    'text-[13px] w-7 h-7',
+                    'font-bold flex items-center justify-center rounded-full transition-all',
+                    day.isSame(dayjs(), 'day') ? 'bg-blue-600 text-white' :
+                    day.day() === 0 ? 'text-red-500 hover:bg-red-50' :
+                    day.day() === 6 ? 'text-blue-500 hover:bg-blue-50' : 'text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  ]">
+              {{ day.format('D') }}
+            </span>
+          </div>
+        </div>
+
+        <div v-for="room in rooms" :key="room.id"
+             class="flex border-b border-gray-100 dark:border-gray-800 last:border-b-0">
+          <div class="w-28 px-2.5 flex-shrink-0 flex items-center gap-2 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 sticky left-0 z-10"
+               :style="{ minHeight: '90px' }">
+            <span class="w-1.5 h-8 rounded-full flex-shrink-0" :style="{ background: room.colorCode }"></span>
+            <div class="min-w-0">
+              <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{{ room.name }}</p>
+              <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
+            </div>
+          </div>
+
+          <div v-for="day in weekDays" :key="day.format()"
+               :class="[
+                 'flex-1 border-r border-gray-100 dark:border-gray-800 last:border-r-0 p-2 flex flex-col gap-1.5 transition-colors',
+                 day.isSame(dayjs(), 'day') ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+               ]"
+               @click="openQuickModal(room.id, 9, day)">
+
+            <div v-for="b in filterBookings(room.id, day).slice(0, 2)" :key="b.id"
+                 @click.stop="pinTooltip(b, $event)"
+                 class="rounded-lg px-1.5 py-1 cursor-pointer transition-all hover:brightness-95 border-l-2"
+                 :style="{ borderLeftColor: room.colorCode, background: room.colorCode + '18' }">
+              <p class="text-[10px] font-bold truncate leading-tight" :style="{ color: room.colorCode }">
+                {{ dayjs(b.startTime).format('HH:mm') }}
+              </p>
+              <p class="text-[9px] text-gray-600 dark:text-gray-300 truncate leading-tight">{{ b.title }}</p>
+            </div>
+            <div v-if="filterBookings(room.id, day).length > 2"
+                 @click.stop="goToDay(day)"
+                 class="text-[9px] font-bold text-blue-500 text-center">
+              +{{ filterBookings(room.id, day).length - 2 }}
+            </div>
+
+            <div v-if="filterBookings(room.id, day).length === 0"
+                 class="flex-1 flex items-center justify-center py-1">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600 hover:bg-blue-50 hover:text-blue-400 transition-colors">
+                <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                  <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { useApp } from '../../../composables/useApp';
+import dayjs from 'dayjs';
+
+const {
+  rooms, weekDays,
+  pinTooltip, openQuickModal,
+  filterBookings,
+  goToDay,
+} = useApp();
+</script>
+

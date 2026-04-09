@@ -3,9 +3,7 @@
     <header class="kiosk-header">
       <div class="header-room">
         <button @click="exitKiosk" class="back-btn" aria-label="뒤로가기">
-          <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
-            <path d="M11 3L5 9l6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <AppIcon name="chevron-left" :size="15" />
         </button>
         <div>
           <div class="room-name">{{ room?.name ?? '회의실' }}</div>
@@ -45,9 +43,7 @@
             <div class="hero-sub" v-else>오늘 남은 예약이 없습니다</div>
 
             <button @click="openBooking" class="hero-book-btn">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                <path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />
-              </svg>
+              <AppIcon name="plus" :size="18" />
               지금 바로 예약
             </button>
           </template>
@@ -77,9 +73,7 @@
             </div>
 
             <button @click="showEndConfirm = true" class="hero-end-btn">
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                <rect x="1" y="1" width="12" height="12" rx="2.5" fill="currentColor" />
-              </svg>
+              <AppIcon name="stop" :size="13" />
               지금 종료
             </button>
           </template>
@@ -112,10 +106,7 @@
 
         <div class="schedule-list">
           <div v-if="todayBookings.length === 0" class="schedule-empty">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style="margin: 0 auto 10px; display: block; opacity: 0.25">
-              <rect x="2" y="6" width="28" height="24" rx="4" stroke="#64748b" stroke-width="2" />
-              <path d="M2 12h28M10 2v5M22 2v5" stroke="#64748b" stroke-width="2" stroke-linecap="round" />
-            </svg>
+            <AppIcon name="calendar" :size="32" style="margin: 0 auto 10px; display: block; opacity: 0.25; color: #64748b" />
             오늘 등록된 일정이 없습니다
           </div>
 
@@ -195,9 +186,7 @@
         <div class="modal-head">
           <div class="modal-title">예약을 지금 종료할까요?</div>
           <button class="modal-close" @click="showEndConfirm = false">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            </svg>
+            <AppIcon name="close" :size="18" />
           </button>
         </div>
         <div class="modal-body">
@@ -220,9 +209,7 @@
             <div class="modal-sub">{{ room?.name }}</div>
           </div>
           <button class="modal-close" @click="showModal = false">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M4 4l14 14M18 4L4 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-            </svg>
+            <AppIcon name="close" :size="22" />
           </button>
         </div>
 
@@ -296,6 +283,7 @@ import { useRoute, useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import axios from 'axios';
+import AppIcon from './icons/AppIcon.vue';
 
 const api = axios.create({
   baseURL: '/api',

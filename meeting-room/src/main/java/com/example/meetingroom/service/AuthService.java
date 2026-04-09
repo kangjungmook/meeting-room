@@ -81,15 +81,11 @@ public class AuthService {
         adminLogService.log("USER_LOGIN", user.getName() + " (" + user.getEmployeeId() + ") 로그인",
                 Map.of("employeeId", user.getEmployeeId(), "name", user.getName()));
 
-        if (dto.isRememberMe()) {
-            String refreshToken = UUID.randomUUID().toString();
-            user.setRefreshToken(refreshToken);
-            user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(30));
-            result.put("refreshToken", refreshToken);
-        } else {
-            user.setRefreshToken(null);
-            user.setRefreshTokenExpiry(null);
-        }
+        // 로그인 시 항상 30일 refreshToken 발급
+        String refreshToken = UUID.randomUUID().toString();
+        user.setRefreshToken(refreshToken);
+        user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(30));
+        result.put("refreshToken", refreshToken);
 
         return result;
     }

@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                         "http://localhost:5173",
                         "http://192.168.152.1:5173",
-                        "http://192.168.1.115:5173",
+                        "http://192.168.1.113.nip.io:5173",
                         "http://192.168.1.123.nip.io:5173",
                         "https://192.168.1.123.nip.io:5173"
                 )

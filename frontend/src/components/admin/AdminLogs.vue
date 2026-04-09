@@ -3,10 +3,7 @@
 
     <!-- 자동 삭제 안내 -->
     <div class="flex items-center gap-1.5 text-[12px] text-slate-400 font-medium">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
-        <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.6"/>
-        <path d="M8 4.5v4l2 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
+      <AppIcon name="clock" :size="12" cls="flex-shrink-0" />
       1개월이 지난 로그는 매일 새벽 3시에 자동 삭제됩니다.
     </div>
 
@@ -25,10 +22,7 @@
       </button>
       <button @click="setLogSort('createdAt')" class="ml-auto flex items-center gap-1 px-3 py-2 rounded-xl text-[12px] font-semibold border transition-all"
         :class="logSort.dir === 'desc' ? 'bg-slate-800 text-white border-transparent' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'">
-        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M7 4v3.5l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+        <AppIcon name="clock" :size="12" />
         {{ logSort.dir === 'desc' ? '최신순' : '오래된순' }}
       </button>
     </div>
@@ -91,11 +85,9 @@
                 <td class="px-5 py-3.5 text-[13px] text-slate-700 font-medium">
                   <div class="flex items-center gap-2">
                     {{ log.description }}
-                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none"
-                      class="flex-shrink-0 text-slate-400 transition-transform duration-200"
-                      :class="expandedId === log.id ? 'rotate-180' : ''">
-                      <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <AppIcon name="chevron-down" :size="13"
+                      cls="flex-shrink-0 text-slate-400 transition-transform duration-200"
+                      :class="expandedId === log.id ? 'rotate-180' : ''" />
                   </div>
                 </td>
                 <td class="px-5 py-3.5 font-mono text-[12px] text-slate-500">{{ log.ip || '-' }}</td>
@@ -189,6 +181,7 @@
 import { ref, computed } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
 import AdminLogTree from './AdminLogTree.vue';
+import AppIcon from '../icons/AppIcon.vue';
 
 const {
   logFilter, logSort, logPage, logDateRange, logSearch,

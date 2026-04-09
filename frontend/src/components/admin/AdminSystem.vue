@@ -4,9 +4,7 @@
     <!-- 점검 모드 경고 배너 -->
     <div v-if="notifSetting.maintenanceMode"
       class="flex items-center gap-3 px-5 py-4 bg-red-500 text-white rounded-2xl font-semibold text-[14px]">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" class="flex-shrink-0">
-        <path d="M9 7v3M9 13h.01M3 15h12l-6-12L3 15z" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
+      <AppIcon name="alert-circle" :size="18" cls="flex-shrink-0 text-white" />
       점검 모드 활성화 중 — ADMIN 외 모든 API 요청이 차단됩니다.
     </div>
 
@@ -68,7 +66,7 @@
         </div>
         <button @click="openCreateAdmin"
           class="flex items-center gap-2 px-4 py-2.5 bg-violet-500 hover:bg-violet-600 text-white rounded-xl text-[13px] font-bold transition-all">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <AppIcon name="plus" :size="13" />
           관리자 추가
         </button>
       </div>
@@ -90,7 +88,7 @@
               <td class="px-6 py-3.5">
                 <div class="flex items-center gap-2">
                   <div class="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
-                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4" r="2.5" stroke="#7c3aed" stroke-width="1.4"/><path d="M1 12c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="#7c3aed" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    <AppIcon name="user" :size="13" class="text-violet-600" />
                   </div>
                   <span class="text-[14px] font-bold text-slate-800">{{ u.name }}</span>
                   <span v-if="u.employeeId === currentUser.employeeId"
@@ -114,7 +112,7 @@
     <div class="flex justify-end">
       <button @click="saveSystemSetting"
         class="flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-[14px] font-bold transition-all">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 8l4 4 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <AppIcon name="check" :size="15" />
         시스템 설정 저장
       </button>
     </div>
@@ -125,7 +123,7 @@
         <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
           <h3 class="text-[17px] font-bold text-slate-800">관리자 계정 생성</h3>
           <button @click="createAdminModal.show = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 transition-all">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <AppIcon name="close" :size="16" />
           </button>
         </div>
         <form @submit.prevent="submitCreateAdmin" class="px-6 py-5 flex flex-col gap-4">
@@ -162,6 +160,7 @@
 import { reactive } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
 import { showAdminToast } from '../../composables/admin/useAdminToast';
+import AppIcon from '../icons/AppIcon.vue';
 
 const { notifSetting, adminUsers, currentUser, changeRole, createUser, saveSystemSetting, dayjs } = useAdmin();
 

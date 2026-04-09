@@ -4,18 +4,9 @@
 
     <!-- 로고 -->
     <div class="flex items-center gap-4 mb-16">
-      <div class="w-14 h-14 rounded-2xl bg-indigo-500 flex items-center justify-center">
-        <svg width="28" height="28" viewBox="0 0 18 18" fill="none">
-          <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
-          <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/>
-          <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/>
-          <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
-        </svg>
-      </div>
       <div>
         <p class="text-3xl font-black tracking-widest" :style="{ color: isDark ? 'white' : '#1e293b' }">회의실 예약 시스템</p>
-                <p class="text-base mt-0.5" :style="{ color: isDark ? '#64748b' : '#94a3b8' }">키오스크 모드</p>
-
+        <p class="text-base mt-0.5" :style="{ color: isDark ? '#64748b' : '#94a3b8' }">키오스크 모드</p>
       </div>
     </div>
 
@@ -58,10 +49,7 @@
               :style="{ background: getRoomStatus(room.id).inUse ? (isDark ? '#f87171' : '#ef4444') : (isDark ? '#34d399' : '#10b981') }"></span>
             {{ getRoomStatus(room.id).inUse ? '사용 중' : '사용 가능' }}
           </span>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"
-            :style="{ color: isDark ? '#475569' : '#94a3b8' }">
-            <path d="M6 3l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <AppIcon name="chevron-right" :size="18" :style="{ color: isDark ? '#475569' : '#94a3b8' }" />
         </div>
       </button>
     </div>
@@ -73,9 +61,7 @@
         :style="{ color: isDark ? '#475569' : '#94a3b8' }"
         @mouseover="e => e.currentTarget.style.color = isDark ? '#94a3b8' : '#64748b'"
         @mouseleave="e => e.currentTarget.style.color = isDark ? '#475569' : '#94a3b8'">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-          <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <AppIcon name="chevron-left" :size="13" />
         일반 로그인으로 돌아가기
       </button>
     </div>
@@ -89,6 +75,7 @@ import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import api from '../api';
+import AppIcon from './icons/AppIcon.vue';
 
 dayjs.locale('ko');
 

@@ -44,7 +44,7 @@
                 <p class="text-[12px] text-slate-400 mt-0.5">{{ getRoomName(b.roomId) }} · {{ b.organizer }}</p>
               </div>
               <div class="text-right flex-shrink-0">
-                <p class="text-[13px] font-black text-emerald-500">{{ Math.max(0, dayjs(b.endTime).diff(dayjs(), 'minute')) }}분 남음</p>
+                <p class="text-[13px] font-black text-emerald-500">{{ Math.ceil(Math.max(0, dayjs(b.endTime).diff(adminLiveNow, 'second')) / 60) }}분 남음</p>
                 <p class="text-[11px] text-slate-400">~{{ dayjs(b.endTime).format('HH:mm') }}</p>
               </div>
             </div>

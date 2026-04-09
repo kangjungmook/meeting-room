@@ -1,27 +1,28 @@
 <template>
   <div class="flex h-screen bg-[#f1f5f9] font-sans text-slate-900">
 
-    <!-- ── 사이드바 ── -->
-    <aside class="sidebar-panel flex-shrink-0 bg-slate-900 h-full z-10"
-      :style="showDrawer ? 'width:256px;overflow:hidden' : 'width:64px;overflow:visible'">
+    <!-- ── 모바일 백드롭 ── -->
+    <div v-if="isMobile && mobileOpen"
+      class="fixed inset-0 z-20 bg-black/50"
+      @click="mobileOpen = false">
+    </div>
 
-      <!-- 접힌 상태 -->
-      <div v-if="!showDrawer" style="height:100%;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:16px;">
-        <div class="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center flex-shrink-0">
-          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-            <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
-            <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/>
-            <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/>
-            <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
-          </svg>
-        </div>
+    <!-- ── 사이드바 ── -->
+    <aside class="bg-slate-900 h-full z-30"
+      :class="isMobile
+        ? ['fixed top-0 left-0 h-full w-64 transition-transform duration-300', mobileOpen ? 'translate-x-0' : '-translate-x-full']
+        : ['sidebar-panel flex-shrink-0', showDrawer ? '' : '']"
+      :style="!isMobile ? (showDrawer ? 'width:256px;overflow:hidden' : 'width:64px;overflow:visible') : ''">
+
+      <!-- 접힌 상태 (데스크탑 전용) -->
+      <div v-if="!showDrawer && !isMobile" style="height:100%;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:16px;">
         <button @click="showDrawer = true"
           class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 3l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <AppIcon name="chevron-right" :size="14" />
         </button>
         <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px;">
           <div v-for="tab in tabs" :key="tab.key" class="relative group/tip">
-            <button @click="activeTab = tab.key"
+            <button @click="activeTab = tab.key; if(isMobile) mobileOpen = false"
               :class="['w-9 h-9 flex items-center justify-center rounded-lg transition-all relative',
                 activeTab === tab.key ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-500 hover:bg-white/10 hover:text-slate-300']">
               <span v-html="tab.icon" class="w-4 h-4"></span>
@@ -44,18 +45,10 @@
       </div>
 
       <!-- 펼친 상태 -->
-      <div v-else style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
+      <div v-if="showDrawer || isMobile" style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
         <div style="flex-shrink:0;padding:20px 20px 16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center flex-shrink-0">
-                <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
-                  <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
-                  <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/>
-                  <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/>
-                  <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
-                </svg>
-              </div>
               <div>
                 <p class="text-[13px] font-black text-white leading-tight whitespace-nowrap">회의실 예약</p>
                 <p class="text-[10px] text-slate-400 leading-tight">관리자 콘솔</p>
@@ -63,7 +56,7 @@
             </div>
             <button @click="showDrawer = false"
               class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-all flex-shrink-0">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10 3L5 7l5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <AppIcon name="chevron-left" :size="14" />
             </button>
           </div>
         </div>
@@ -75,11 +68,9 @@
               <button @click="toggleNavGroup(group.label)"
                 class="flex items-center justify-between w-full px-2 mt-3 mb-0.5 py-0.5 rounded-lg hover:bg-white/5 transition-colors group/hdr">
                 <p class="text-[10px] font-bold tracking-widest uppercase text-slate-500 group-hover/hdr:text-slate-400 transition-colors">{{ group.label }}</p>
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
-                  class="text-slate-600 transition-transform duration-200 flex-shrink-0"
-                  :class="isNavGroupExpanded(group.label) ? 'rotate-0' : '-rotate-90'">
-                  <path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                <AppIcon name="chevron-down" :size="10"
+                  cls="text-slate-600 transition-transform duration-200 flex-shrink-0"
+                  :class="isNavGroupExpanded(group.label) ? 'rotate-0' : '-rotate-90'" />
               </button>
               <template v-if="isNavGroupExpanded(group.label)">
                 <button v-for="key in group.keys" :key="key"
@@ -104,7 +95,7 @@
         <div style="flex-shrink:0;padding:16px 16px 20px;border-top:1px solid rgba(255,255,255,0.08);">
           <a href="/"
             class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-slate-400 hover:text-white hover:bg-white/10 transition-all">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <AppIcon name="chevron-left" :size="14" />
             예약 현황으로 이동
           </a>
         </div>
@@ -117,6 +108,11 @@
       <!-- Top bar -->
       <header class="flex-shrink-0 bg-white border-b border-slate-200 flex items-center justify-between px-4 h-[60px] gap-3 shadow-sm">
         <div class="flex items-center gap-2">
+          <!-- 모바일 햄버거 버튼 -->
+          <button v-if="isMobile" @click="mobileOpen = !mobileOpen"
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors mr-1">
+            <AppIcon name="menu" :size="18" />
+          </button>
           <span v-html="currentTab?.icon" class="w-5 h-5 text-indigo-500 flex-shrink-0"></span>
           <h1 class="text-[16px] font-black text-slate-800">{{ currentTab?.label }}</h1>
           <span v-if="activeTab === 'users-pending' && pendingCount > 0"
@@ -127,17 +123,17 @@
         <div class="flex items-center gap-3">
           <button v-if="notifSetting.maintenanceMode" @click="activeTab = 'system'"
             class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-xl text-[12px] font-bold animate-pulse">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 4v2.5M6 9h.01M2 10h8L6 2 2 10z" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <AppIcon name="alert-circle" :size="12" class="text-white" />
             점검 모드
           </button>
           <button v-if="activeTab === 'rooms'" @click="roomsTabRef?.openModal()"
             class="flex items-center gap-2 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-[14px] font-bold transition-all">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <AppIcon name="plus" :size="15" />
             회의실 추가
           </button>
           <div class="flex items-center gap-2 pl-3 border-l border-slate-200">
             <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="5" r="3" stroke="#6366f1" stroke-width="1.5"/><path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <AppIcon name="user" :size="15" class="text-indigo-500" />
             </div>
             <div class="hidden sm:block">
               <p class="text-[13px] font-bold text-slate-700 leading-tight">{{ currentUser.name }}</p>
@@ -145,7 +141,7 @@
             </div>
             <button @click="logout" title="로그아웃"
               class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-500 hover:bg-red-50 transition-all ml-1">
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6 2H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3M10 10l3-3-3-3M13 7H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <AppIcon name="logout" :size="15" />
             </button>
           </div>
         </div>
@@ -172,12 +168,8 @@
       <div v-if="adminToast.show"
            class="fixed bottom-6 right-6 z-[9999] flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg text-[14px] font-bold pointer-events-none"
            :class="adminToast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'">
-        <svg v-if="adminToast.type === 'success'" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M2.5 8l4 4 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M8 5v4M8 11.5h.01M2 8a6 6 0 1 0 12 0A6 6 0 0 0 2 8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
+        <AppIcon v-if="adminToast.type === 'success'" name="check" :size="16" />
+        <AppIcon v-else name="alert-circle" :size="16" />
         {{ adminToast.msg }}
       </div>
     </transition>
@@ -190,6 +182,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAdmin } from '../composables/useAdmin';
 import { adminToast } from '../composables/admin/useAdminToast';
 import api from '../api';
+import AppIcon from './icons/AppIcon.vue';
 
 import AdminDashboard    from './admin/AdminDashboard.vue';
 import AdminRooms        from './admin/AdminRooms.vue';
@@ -228,8 +221,9 @@ const navGroups = [
 ];
 
 // ── UI state ──
-const showDrawer = ref(true);
-const isMobile   = ref(window.innerWidth < 768);
+const showDrawer  = ref(true);
+const isMobile    = ref(window.innerWidth < 768);
+const mobileOpen  = ref(false);
 const roomsTabRef = ref(null);
 
 const currentTab = computed(() => tabs.find(t => t.key === activeTab.value));
@@ -244,7 +238,10 @@ const toggleNavGroup     = (label) => {
 const isNavGroupExpanded = (label) => !collapsedNavGroups.value.includes(label);
 
 // ── Global listeners ──
-const onResize = () => { isMobile.value = window.innerWidth < 768; };
+const onResize = () => {
+  isMobile.value = window.innerWidth < 768;
+  if (!isMobile.value) mobileOpen.value = false;
+};
 window.addEventListener('resize', onResize);
 
 const logout = async () => {

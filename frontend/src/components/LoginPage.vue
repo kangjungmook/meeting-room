@@ -4,14 +4,6 @@
 
         <!-- 브랜드 -->
         <div class="flex flex-col items-center gap-2 sm:gap-3">
-          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-[12px] sm:rounded-[14px] bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/>
-              <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/>
-              <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/>
-              <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white"/>
-            </svg>
-          </div>
           <div class="text-center">
             <h1 class="text-[18px] sm:text-[22px] font-bold text-gray-900 tracking-tight">회의실 예약 시스템</h1>
             <p class="hidden sm:block text-[14px] text-gray-400 mt-1">{{ mode === 'login' ? '계정에 로그인하세요' : '새 계정을 만드세요' }}</p>
@@ -48,27 +40,13 @@
                        focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-gray-300" />
               <button type="button" @click="showPw = !showPw"
                 class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors">
-                <svg v-if="!showPw" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M1 9s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" stroke="currentColor" stroke-width="1.5"/>
-                  <circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
-                <svg v-else width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M1 1l16 16M7.5 7.6A2.5 2.5 0 0 0 11.4 11M5 4.1C2.9 5.5 1 9 1 9s3 6 8 6c1.5 0 2.9-.4 4.1-1.1M8 3.1A7.3 7.3 0 0 1 9 3c5 0 8 6 8 6a13.5 13.5 0 0 1-1.7 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
+                <AppIcon :name="showPw ? 'eye-off' : 'eye'" :size="18" />
               </button>
             </div>
           </div>
 
-          <label class="flex items-center gap-2.5 cursor-pointer select-none mt-1">
-            <input type="checkbox" v-model="form.rememberMe" class="w-4 h-4 rounded accent-indigo-600" />
-            <span class="text-[13px] text-gray-500">자동 로그인 (30일)</span>
-          </label>
-
           <div v-if="errorMsg" class="flex items-start gap-2.5 px-4 py-3 bg-red-50 rounded-xl">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" class="flex-shrink-0 mt-px">
-              <circle cx="7.5" cy="7.5" r="6.5" stroke="#f87171" stroke-width="1.4"/>
-              <path d="M7.5 4.5v3.5M7.5 10.5h.01" stroke="#f87171" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+            <AppIcon name="alert-circle" :size="15" cls="flex-shrink-0 mt-px text-red-400" />
             <span class="text-[13px] text-red-500 leading-snug">{{ errorMsg }}</span>
           </div>
 
@@ -106,13 +84,7 @@
                        focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-gray-300" />
               <button type="button" @click="showPw = !showPw"
                 class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors">
-                <svg v-if="!showPw" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M1 9s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" stroke="currentColor" stroke-width="1.5"/>
-                  <circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
-                <svg v-else width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M1 1l16 16M7.5 7.6A2.5 2.5 0 0 0 11.4 11M5 4.1C2.9 5.5 1 9 1 9s3 6 8 6c1.5 0 2.9-.4 4.1-1.1M8 3.1A7.3 7.3 0 0 1 9 3c5 0 8 6 8 6a13.5 13.5 0 0 1-1.7 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
+                <AppIcon :name="showPw ? 'eye-off' : 'eye'" :size="18" />
               </button>
             </div>
             <p class="text-[12px] text-gray-400 mt-0.5">6자 이상 · 대문자 · 소문자 · 숫자 · 특수문자 각 1개 이상</p>
@@ -127,9 +99,7 @@
                     : 'border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50']" />
               <div v-if="form.confirmPassword && form.confirmPassword === form.password"
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8l3.5 3.5 6.5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                <AppIcon name="check" :size="16" />
               </div>
             </div>
             <p v-if="form.confirmPassword && form.confirmPassword !== form.password"
@@ -137,17 +107,11 @@
           </div>
 
           <div v-if="errorMsg" class="flex items-start gap-2.5 px-4 py-3 bg-red-50 rounded-xl">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" class="flex-shrink-0 mt-px">
-              <circle cx="7.5" cy="7.5" r="6.5" stroke="#f87171" stroke-width="1.4"/>
-              <path d="M7.5 4.5v3.5M7.5 10.5h.01" stroke="#f87171" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+            <AppIcon name="alert-circle" :size="15" cls="flex-shrink-0 mt-px text-red-400" />
             <span class="text-[13px] text-red-500 leading-snug">{{ errorMsg }}</span>
           </div>
           <div v-if="successMsg" class="flex items-start gap-2.5 px-4 py-3 bg-emerald-50 rounded-xl">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" class="flex-shrink-0 mt-px">
-              <circle cx="7.5" cy="7.5" r="6.5" stroke="#34d399" stroke-width="1.4"/>
-              <path d="M4.5 7.5l2.5 2.5 4-4" stroke="#34d399" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <AppIcon name="check" :size="15" cls="flex-shrink-0 mt-px text-emerald-400" />
             <span class="text-[13px] text-emerald-600 leading-snug">{{ successMsg }}</span>
           </div>
 
@@ -161,10 +125,7 @@
         <div class="hidden sm:block pt-2 border-t border-gray-100 text-center">
           <button @click="enterKioskMode"
             class="inline-flex items-center gap-1.5 text-[13px] text-gray-400 hover:text-gray-600 transition-colors">
-            <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
-              <rect x="1.5" y="2.5" width="15" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M6 15.5h6M9 13.5v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
+            <AppIcon name="monitor" :size="13" />
             키오스크 모드로 입장
           </button>
         </div>
@@ -177,6 +138,7 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../api';
+import AppIcon from './icons/AppIcon.vue';
 import { refreshCurrentUser } from '../composables/useApp';
 
 const router = useRouter();
@@ -196,7 +158,6 @@ const form = reactive({
   password: '',
   confirmPassword: '',
   name: '',
-  rememberMe: false,
 });
 
 // ── 폼 초기화 ──────────────────────────────────────────────
@@ -217,18 +178,13 @@ const submitLogin = async () => {
     const res = await api.post('/auth/login', {
       employeeId: form.employeeId,
       password: form.password,
-      rememberMe: form.rememberMe,
     });
     localStorage.setItem('token', res.data.token);
     refreshCurrentUser();
     sessionStorage.setItem('visited', 'true');
     sessionStorage.setItem('adminAuth', 'true');
 
-    if (res.data.refreshToken) {
-      localStorage.setItem('refreshToken', res.data.refreshToken);
-    } else {
-      localStorage.removeItem('refreshToken');
-    }
+    localStorage.setItem('refreshToken', res.data.refreshToken);
 
     if (res.data.passwordResetRequired) {
       sessionStorage.setItem('passwordResetRequired', 'true');

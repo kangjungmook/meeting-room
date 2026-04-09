@@ -23,14 +23,6 @@
         <!-- 헤더 -->
         <div class="flex items-center justify-between px-4 pb-3 flex-shrink-0">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
-                <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
-                <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/>
-                <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.5"/>
-                <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.95"/>
-              </svg>
-            </div>
             <span class="text-[13.5px] font-bold text-gray-900 dark:text-gray-50">회의실 예약</span>
           </div>
         </div>
@@ -44,10 +36,7 @@
                       ? 'font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
                       : 'font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   ]">
-            <svg :class="route.path === '/main' ? 'text-blue-600' : 'text-gray-400'" class="flex-shrink-0" width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <rect x="1.5" y="3.5" width="15" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M5.5 1.5v4M12.5 1.5v4M1.5 8h15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
+            <AppIcon name="calendar" :size="16" cls="flex-shrink-0" :class="route.path === '/main' ? 'text-blue-600' : 'text-gray-400'" />
             전체 예약 현황
           </button>
 
@@ -58,10 +47,7 @@
                       ? 'font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
                       : 'font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   ]">
-            <svg :class="route.path === '/my-bookings' ? 'text-blue-600' : 'text-gray-400'" class="flex-shrink-0" width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="6" r="3.5" stroke="currentColor" stroke-width="1.6"/>
-              <path d="M2 16c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
+            <AppIcon name="user" :size="16" cls="flex-shrink-0" :class="route.path === '/my-bookings' ? 'text-blue-600' : 'text-gray-400'" />
             내 예약
           </button>
 
@@ -72,10 +58,7 @@
                       ? 'font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
                       : 'font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   ]">
-            <svg :class="route.path === '/settings' ? 'text-blue-600' : 'text-gray-400'" class="flex-shrink-0" width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <path d="M9 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M14.5 9c0-.4 0-.8-.1-1.2l1.7-1.3-1.5-2.6-2 .8a6 6 0 0 0-2.1-1.2L10 1.5H7.5l-.5 2A6 6 0 0 0 4.9 4.7l-2-.8L1.4 6.5l1.7 1.3A6 6 0 0 0 3 9c0 .4 0 .8.1 1.2L1.4 11.5l1.5 2.6 2-.8a6 6 0 0 0 2.1 1.2l.5 2H10l.5-2a6 6 0 0 0 2.1-1.2l2 .8 1.5-2.6-1.7-1.3c.1-.4.1-.8.1-1.2z" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
+            <AppIcon name="settings" :size="16" cls="flex-shrink-0" :class="route.path === '/settings' ? 'text-blue-600' : 'text-gray-400'" />
             설정
           </button>
 
@@ -103,8 +86,7 @@
             </div>
             <button @click="toggleDarkMode"
                     class="ml-auto flex items-center justify-center w-7 h-7 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 transition-colors flex-shrink-0">
-              <svg v-if="darkMode" width="15" height="15" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.5 3.5l1.5 1.5M13 13l1.5 1.5M3.5 14.5l1.5-1.5M13 5l1.5-1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-              <svg v-else width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M15 10.5A7 7 0 0 1 7.5 3a7 7 0 0 0 7.5 7.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="text-[14px]">{{ darkMode ? '☀️' : '🌙' }}</span>
             </button>
           </div>
         </div>
@@ -120,6 +102,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import AppIcon from '../icons/AppIcon.vue';
 import { useApp } from '../../composables/useApp';
 
 const router = useRouter();

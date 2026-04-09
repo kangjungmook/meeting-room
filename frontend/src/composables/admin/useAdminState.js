@@ -3,9 +3,9 @@ import dayjs from 'dayjs';
 import api from '../../api';
 import { parseJwt } from '../../utils/parseJwt';
 
-// ── 관리자용 분(minute) 단위 라이브 타이머 ─────────────────────
+// ── 관리자용 라이브 타이머 (30초마다 갱신) ────────────────────
 export const adminLiveNow = ref(dayjs());
-setInterval(() => { adminLiveNow.value = dayjs(); }, 60_000);
+setInterval(() => { adminLiveNow.value = dayjs(); }, 30_000);
 
 // ── 현재 사용자 (관리자 컨텍스트) ────────────────────────────
 const _p = parseJwt();
