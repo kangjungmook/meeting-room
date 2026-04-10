@@ -64,11 +64,28 @@ export const popoverStyle = ref({});
 // 뷰 전환 시 툴팁 초기화
 watch(viewMode, () => { tooltip.show = false; tooltip.pinned = false; tooltip.booking = null; });
 
+// 팝업을 카드 오른쪽(공간 없으면 왼쪽)에 배치하는 공통 함수
+const calcPopupStyle = (rect, popupW = 296, popupH = 320) => {
+  const gap = 8;
+  const vw  = window.innerWidth;
+  const vh  = window.innerHeight;
+
+  // 좌우: 오른쪽 공간이 충분하면 오른쪽, 아니면 왼쪽
+  const left = (rect.right + gap + popupW <= vw)
+    ? rect.right + gap
+    : rect.left - popupW - gap;
+
+  // 상하: 카드 상단 기준, 아래로 넘치면 위로 끌어올림
+  const top = Math.min(rect.top, vh - popupH - gap);
+
+  return { top: Math.max(gap, top) + 'px', left: Math.max(gap, left) + 'px' };
+};
+
 export const showTooltip = (b, event) => {
   if (tooltip.pinned || isMobile.value) return;
   const rect = event.currentTarget.getBoundingClientRect();
   tooltip.booking = b;
-  tooltip.style   = { top: (rect.bottom + 6) + 'px', left: Math.min(rect.left, window.innerWidth - 300) + 'px' };
+  tooltip.style   = calcPopupStyle(rect);
   tooltip.show    = true;
   tooltip.pinned  = false;
 };
@@ -80,7 +97,7 @@ export const pinTooltip = (b, event) => {
     tooltip.style = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 'calc(100vw - 48px)', maxWidth: '360px' };
   } else {
     const rect = event.currentTarget.getBoundingClientRect();
-    tooltip.style = { top: (rect.bottom + 6) + 'px', left: Math.min(rect.left, window.innerWidth - 300) + 'px' };
+    tooltip.style = calcPopupStyle(rect);
   }
 };
 
@@ -88,6 +105,6 @@ export const openDetail = (b, event) => {
   detailTarget.value = b;
   if (event) {
     const rect = event.currentTarget.getBoundingClientRect();
-    popoverStyle.value = { top: (rect.bottom + 8) + 'px', left: Math.min(rect.left, window.innerWidth - 300) + 'px' };
+    popoverStyle.value = calcPopupStyle(rect);
   }
 };

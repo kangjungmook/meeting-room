@@ -45,6 +45,13 @@
             </div>
           </div>
 
+          <!-- 아이디 저장 -->
+          <label class="flex items-center gap-2 cursor-pointer select-none w-fit">
+            <input type="checkbox" v-model="saveId"
+              class="w-4 h-4 rounded accent-indigo-600 cursor-pointer" />
+            <span class="text-[13px] text-gray-500">아이디 저장</span>
+          </label>
+
           <div v-if="errorMsg" class="flex items-start gap-2.5 px-4 py-3 bg-red-50 rounded-xl">
             <AppIcon name="alert-circle" :size="15" cls="flex-shrink-0 mt-px text-red-400" />
             <span class="text-[13px] text-red-500 leading-snug">{{ errorMsg }}</span>
@@ -135,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../../api';
 import AppIcon from '../../components/icons/AppIcon.vue';
@@ -153,11 +160,22 @@ const errorMsg = ref('');
 const successMsg = ref('');
 const rejectedReason = ref(null);
 
+// ── 아이디 저장 ────────────────────────────────────────────────
+const saveId = ref(false);
+
 const form = reactive({
   employeeId: '',
   password: '',
   confirmPassword: '',
   name: '',
+});
+
+onMounted(() => {
+  const saved = localStorage.getItem('saved_employee_id');
+  if (saved) {
+    form.employeeId = saved;
+    saveId.value = true;
+  }
 });
 
 // ── 폼 초기화 ──────────────────────────────────────────────
@@ -179,6 +197,10 @@ const submitLogin = async () => {
       employeeId: form.employeeId,
       password: form.password,
     });
+    // 아이디 저장 처리
+    if (saveId.value) localStorage.setItem('saved_employee_id', form.employeeId);
+    else localStorage.removeItem('saved_employee_id');
+
     localStorage.setItem('token', res.data.token);
     refreshCurrentUser();
     sessionStorage.setItem('visited', 'true');

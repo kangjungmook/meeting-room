@@ -7,7 +7,7 @@
            :style="{ width: roomCol + 'px' }">
         <div class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 flex items-center"
              :style="{ height: HEADER_H + 'px' }">
-          <span class="text-[11.5px] font-bold text-gray-500 dark:text-gray-500 uppercase tracking-wider">회의실</span>
+          <span class="text-[11.5px] md:text-[13px] font-bold text-gray-500 dark:text-gray-500 uppercase tracking-wider">회의실</span>
         </div>
 
         <div v-for="(room, ri) in rooms" :key="room.id"
@@ -19,8 +19,8 @@
                   :style="{ background: room.colorCode, height: '36px' }">
             </span>
             <div class="min-w-0 flex-1">
-              <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 truncate leading-tight">{{ room.name }}</p>
-              <p class="text-[12px] text-gray-500 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
+              <p class="text-[13px] md:text-[14px] font-bold text-gray-800 dark:text-gray-100 truncate leading-tight">{{ room.name }}</p>
+              <p class="text-[12px] md:text-[13px] text-gray-500 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
             </div>
           </div>
         </div>
@@ -34,17 +34,17 @@
             <div v-for="h in hours" :key="h"
                  class="absolute top-0 bottom-0 flex items-center pointer-events-none"
                  :style="{ left: ((h - 6) / HOUR_COUNT * 100) + '%' }">
-              <span class="text-[12px] font-semibold text-gray-600 dark:text-gray-500 pl-2 whitespace-nowrap select-none">
+              <span class="text-[12px] md:text-[13px] font-semibold text-gray-600 dark:text-gray-500 pl-2 whitespace-nowrap select-none">
                 {{ h }}:00
               </span>
             </div>
             <div class="absolute top-0 bottom-0 right-0 flex items-center pointer-events-none">
-              <span class="text-[12px] font-semibold text-gray-600 dark:text-gray-500 pr-2 select-none">21:00</span>
+              <span class="text-[12px] md:text-[13px] font-semibold text-gray-600 dark:text-gray-500 pr-2 select-none">21:00</span>
             </div>
             <template v-if="targetDate.isSame(dayjs(), 'day')">
               <div class="absolute bottom-0 translate-y-1/2 z-30 pointer-events-none -translate-x-1/2"
                    :style="{ left: nowLinePct }">
-                <div class="bg-red-500 text-white text-[10px] font-bold px-2 py-[3px] rounded-full shadow-md leading-none whitespace-nowrap tabular-nums">
+                <div class="bg-red-500 text-white text-[10px] md:text-[11px] font-bold px-2 py-[3px] rounded-full shadow-md leading-none whitespace-nowrap tabular-nums">
                   {{ liveNow.format('HH:mm') }}
                 </div>
               </div>
@@ -81,17 +81,32 @@
                 <div class="absolute inset-0 bg-black/10"></div>
                 <div class="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-black/20"></div>
                 <div class="relative flex flex-col pt-1.5 pl-3 pr-2">
-                  <p class="text-[12.5px] font-black text-white truncate leading-tight"
+                  <p class="text-[12.5px] md:text-[14px] font-black text-white truncate leading-tight"
                      style="text-shadow: 0 1px 3px rgba(0,0,0,0.4)">{{ b.title }}</p>
                   <p v-if="chipMinutes(b.startTime, b.endTime) >= 30"
-                     class="text-[10.5px] text-white/90 truncate mt-0.5 tabular-nums"
+                     class="text-[10.5px] md:text-[12px] text-white/90 truncate mt-0.5 tabular-nums"
                      style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">
                     {{ dayjs(b.startTime).format('HH:mm') }} – {{ dayjs(b.endTime).format('HH:mm') }}
                   </p>
-                  <p v-if="chipMinutes(b.startTime, b.endTime) >= 60 && b.organizer"
-                     class="text-[10px] text-white/80 truncate mt-0.5"
+                  <p v-if="b.organizer"
+                     class="hidden md:flex items-center gap-1 text-[12px] text-white/80 truncate mt-0.5"
                      style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">
+                    <svg width="10" height="10" viewBox="0 0 15 15" fill="none" class="flex-shrink-0">
+                      <circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
                     {{ b.organizer }}
+                  </p>
+                  <p v-if="chipMinutes(b.startTime, b.endTime) >= 60 && resolveAttendees(b.attendeeIds, b.externalAttendeeNames)"
+                     class="hidden md:flex items-center gap-1 text-[11px] text-white/70 truncate mt-0.5"
+                     style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">
+                    <svg width="12" height="10" viewBox="0 0 18 14" fill="none" class="flex-shrink-0">
+                      <circle cx="6" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+                      <path d="M0.5 13c0-3 2.5-5.2 5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                      <circle cx="12" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+                      <path d="M17.5 13c0-3-2.5-5.2-5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                    </svg>
+                    {{ resolveAttendees(b.attendeeIds, b.externalAttendeeNames) }}
                   </p>
                 </div>
               </div>
@@ -126,7 +141,7 @@ const props = defineProps({
 
 const {
   rooms, targetDate, hours,
-  filterBookings, chipMinutes,
+  filterBookings, chipMinutes, resolveAttendees,
   tooltip, showTooltip, pinTooltip, openQuickModal,
   getBookingsForDate, sortBookings,
   liveNow, isLoadingBookings,

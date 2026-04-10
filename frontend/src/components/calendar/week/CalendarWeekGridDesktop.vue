@@ -8,7 +8,7 @@
                class="flex-1 flex flex-col items-center gap-1 py-2.5 border-r border-gray-100 dark:border-gray-800 last:border-r-0 cursor-pointer select-none"
                :class="day.day() === 0 ? 'bg-red-50/50 dark:bg-red-900/10' : day.day() === 6 ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''"
                @click.stop="goToDay(day)">
-            <span class="text-[10px] font-bold uppercase tracking-wider"
+            <span class="text-[12px] font-bold uppercase tracking-wider"
                   :style="day.day() === 0 ? { color: '#f87171' } : day.day() === 6 ? { color: '#60a5fa' } : { color: '#94a3b8' }">
               {{ day.format('ddd') }}
             </span>
@@ -30,8 +30,8 @@
                :style="{ minHeight: '130px' }">
             <span class="w-1.5 h-8 rounded-full flex-shrink-0" :style="{ background: room.colorCode }"></span>
             <div class="min-w-0">
-              <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{{ room.name }}</p>
-              <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
+              <p class="text-[14px] font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{{ room.name }}</p>
+              <p class="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">{{ room.capacity }}인</p>
             </div>
           </div>
 
@@ -50,16 +50,31 @@
                  @click.stop="pinTooltip(b, $event)"
                  class="rounded-xl px-3 py-2 cursor-pointer transition-all hover:brightness-95 border-l-[3px]"
                  :style="{ borderLeftColor: room.colorCode, background: room.colorCode + '18' }">
-              <p class="text-[12px] font-black text-gray-800 dark:text-gray-100 truncate leading-tight">{{ b.title }}</p>
-              <p class="text-[11px] font-semibold mt-0.5" :style="{ color: room.colorCode }">
+              <p class="text-[13px] font-black text-gray-800 dark:text-gray-100 truncate leading-tight">{{ b.title }}</p>
+              <p class="text-[12px] font-semibold mt-0.5" :style="{ color: room.colorCode }">
                 {{ dayjs(b.startTime).format('HH:mm') }} – {{ dayjs(b.endTime).format('HH:mm') }}
               </p>
-              <p v-if="b.organizer" class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">{{ b.organizer }}</p>
+              <span v-if="b.organizer" class="flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                <svg width="10" height="10" viewBox="0 0 15 15" fill="none" class="flex-shrink-0">
+                  <circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                {{ b.organizer }}
+              </span>
+              <span v-if="resolveAttendees(b.attendeeIds, b.externalAttendeeNames)" class="flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                <svg width="12" height="10" viewBox="0 0 18 14" fill="none" class="flex-shrink-0">
+                  <circle cx="6" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M0.5 13c0-3 2.5-5.2 5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  <circle cx="12" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M17.5 13c0-3-2.5-5.2-5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                {{ resolveAttendees(b.attendeeIds, b.externalAttendeeNames) }}
+              </span>
             </div>
 
             <div v-if="filterBookings(room.id, day).length > 1"
                  @click.stop="toggleExpand(room.id + '-' + day.format('YYYYMMDD'))"
-                 class="px-2 py-1 rounded-lg font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 transition-colors cursor-pointer text-center text-[11px]">
+                 class="px-2 py-1 rounded-lg font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 transition-colors cursor-pointer text-center text-[12px]">
               <span v-if="!isExpanded(room.id + '-' + day.format('YYYYMMDD'))">+{{ filterBookings(room.id, day).length - 1 }}개</span>
               <span v-else>접기 ↑</span>
             </div>
@@ -87,7 +102,7 @@ import dayjs from 'dayjs';
 const {
   rooms, weekDays,
   tooltip, showTooltip, pinTooltip, openQuickModal,
-  filterBookings,
+  filterBookings, resolveAttendees,
   isExpanded, toggleExpand,
   goToDay,
 } = useApp();

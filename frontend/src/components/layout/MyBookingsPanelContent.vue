@@ -1,4 +1,6 @@
 <template>
+  <div class="flex flex-col flex-1 min-h-0 relative">
+
   <!-- 헤더 -->
   <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
     <div class="flex items-center gap-3">
@@ -7,7 +9,7 @@
       </div>
       <div>
         <h3 class="text-[15px] font-black text-gray-800 dark:text-gray-100 leading-tight">내 예약</h3>
-        <p class="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">{{ myBookings.length }}건</p>
+        <p class="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">{{ filteredCount }}건</p>
       </div>
     </div>
     <button @click="showMyBookings = false"
@@ -16,11 +18,22 @@
     </button>
   </div>
 
+  <!-- 필터 탭 -->
+  <div class="flex-shrink-0 flex gap-1.5 px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
+    <button v-for="f in filterTabs" :key="f.key" @click="activeFilter = f.key"
+            class="px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all"
+            :class="activeFilter === f.key
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'">
+      {{ f.label }}
+    </button>
+  </div>
+
   <!-- 내용 -->
   <div class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5 custom-scrollbar">
 
     <!-- 빈 상태 -->
-    <div v-if="myBookings.length === 0"
+    <div v-if="filteredCount === 0"
          class="flex flex-col items-center justify-center py-16 gap-3">
       <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
         <AppIcon name="calendar" :size="22" class="text-slate-400" />
@@ -77,10 +90,12 @@
       </template>
     </template>
   </div>
+
+  </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import dayjs from 'dayjs';
 import AppIcon from '../icons/AppIcon.vue';
 import {
@@ -89,23 +104,44 @@ import {
   openEditModal, confirmCancel, currentUser,
 } from '../../composables/useApp';
 
-const sections = computed(() => [
+const filterTabs = [
+  { key: 'all',    label: '전체' },
+  { key: 'today',  label: '오늘' },
+  { key: 'week',   label: '이번 주' },
+  { key: 'later',  label: '이후' },
+];
+const activeFilter = ref('all');
+
+const allSections = computed(() => [
   {
+    key: 'today',
     label: '오늘 회의',
     list: myBookingsToday.value,
     fmt: b => `${dayjs(b.startTime).format('HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`,
   },
   {
+    key: 'week',
     label: '이번 주 회의',
     list: myBookingsThisWeek.value,
     fmt: b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`,
   },
   {
+    key: 'later',
     label: '이후 일정',
     list: myBookingsUpcoming.value,
     fmt: b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`,
   },
 ]);
+
+const sections = computed(() =>
+  activeFilter.value === 'all'
+    ? allSections.value
+    : allSections.value.filter(s => s.key === activeFilter.value)
+);
+
+const filteredCount = computed(() =>
+  sections.value.reduce((sum, s) => sum + s.list.length, 0)
+);
 
 const handleEdit = (b) => {
   openEditModal(b);

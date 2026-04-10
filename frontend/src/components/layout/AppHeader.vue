@@ -77,79 +77,82 @@
 
   </header>
 
-  <!-- 모바일 헤더 -->
-  <header v-else class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-    <!-- 1줄: 메뉴 + 뷰탭(가로스크롤) + 아이콘 -->
-    <div class="grid grid-cols-[auto_1fr_auto] items-center px-3 py-2 gap-2">
-      <button @click="showDrawer = true"
-              class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-          <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <div class="min-w-0 flex justify-center">
-        <div class="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5 overflow-x-auto no-scrollbar max-w-full">
-          <button v-for="m in modes" :key="m.val" @click="viewMode = m.val"
-                  :class="[
-                    'px-3 py-1.5 rounded-md text-[12px] font-semibold transition-all whitespace-nowrap flex-shrink-0',
-                    viewMode === m.val ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50 shadow-sm' : 'text-gray-500 dark:text-gray-400'
-                  ]">
-            {{ m.name }}
-          </button>
-        </div>
-      </div>
+  <!-- 모바일 헤더 (1줄) -->
+  <header v-else class="flex-shrink-0 h-[48px] bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center px-2 gap-1.5">
 
-      <div class="flex items-center gap-1 flex-shrink-0">
-        <div class="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center ring-1 ring-blue-100 dark:ring-blue-900/30">
-          <svg width="12" height="12" viewBox="0 0 15 15" fill="none">
-            <circle cx="7.5" cy="5" r="3" stroke="#2563eb" stroke-width="1.5"/>
-            <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <!-- 알림 버튼 (모바일 전용) -->
-        <button @click="requestNotifPermission"
-                :class="[
-                  'w-7 h-7 flex items-center justify-center rounded-lg transition-colors',
-                  notifPermission === 'granted' ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
-                ]">
-          <svg v-if="notifPermission === 'granted'" width="14" height="14" viewBox="0 0 15 15" fill="none">
-            <path d="M7.5 1a4.5 4.5 0 0 1 4.5 4.5c0 2.5.5 3.5 1 4.5H2c.5-1 1-2 1-4.5A4.5 4.5 0 0 1 7.5 1z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
-            <path d="M5.5 10a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-          </svg>
-          <svg v-else width="14" height="14" viewBox="0 0 15 15" fill="none">
-            <path d="M7.5 1a4.5 4.5 0 0 1 4.5 4.5c0 2.5.5 3.5 1 4.5H2c.5-1 1-2 1-4.5A4.5 4.5 0 0 1 7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-            <path d="M5.5 10a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <button @click="logout"
-                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-          <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
-            <path d="M6 2H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3M10 10l3-3-3-3M13 7H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
+    <!-- 햄버거 -->
+    <button @click="showDrawer = true"
+            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <!-- 뷰 탭 -->
+    <div class="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5 flex-shrink-0">
+      <button v-for="m in modes" :key="m.val" @click="viewMode = m.val"
+              :class="[
+                'px-2.5 py-1 rounded-md text-[12px] font-semibold transition-all whitespace-nowrap',
+                viewMode === m.val ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50 shadow-sm' : 'text-gray-500 dark:text-gray-400'
+              ]">
+        {{ m.name }}
+      </button>
     </div>
 
-    <!-- 2줄: 날짜 네비 -->
-    <div class="flex items-center justify-center gap-1.5 px-3 pb-2.5">
+    <!-- 날짜 네비 -->
+    <div class="flex items-center gap-0.5 flex-1 justify-center min-w-0">
       <button @click="moveDate(-1)"
-              class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
-        <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
-          <path d="M11 4L7 9l4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <span class="text-[12.5px] font-semibold text-gray-800 dark:text-gray-100 text-center whitespace-nowrap px-1">{{ dateLabel }}</span>
-      <button @click="moveDate(1)"
-              class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
-        <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
-          <path d="M7 4l4 5-4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              class="w-6 h-6 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
       <button @click="resetDate"
-              class="px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-[12px] font-semibold text-gray-500 dark:text-gray-400">
+              class="text-[12.5px] font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap px-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+        {{ dateLabel }}
+      </button>
+      <button @click="moveDate(1)"
+              class="w-6 h-6 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button @click="resetDate"
+              class="px-2 h-6 rounded-md border border-gray-200 dark:border-gray-700 text-[11px] font-semibold text-gray-500 dark:text-gray-400 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex-shrink-0">
         오늘
       </button>
     </div>
+
+    <!-- 우측 아이콘 -->
+    <div class="flex items-center gap-0.5 flex-shrink-0">
+      <div class="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center ring-1 ring-blue-100 dark:ring-blue-900/30">
+        <svg width="12" height="12" viewBox="0 0 15 15" fill="none">
+          <circle cx="7.5" cy="5" r="3" stroke="#2563eb" stroke-width="1.5"/>
+          <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <button @click="requestNotifPermission"
+              :class="[
+                'w-7 h-7 flex items-center justify-center rounded-lg transition-colors',
+                notifPermission === 'granted' ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+              ]">
+        <svg v-if="notifPermission === 'granted'" width="14" height="14" viewBox="0 0 15 15" fill="none">
+          <path d="M7.5 1a4.5 4.5 0 0 1 4.5 4.5c0 2.5.5 3.5 1 4.5H2c.5-1 1-2 1-4.5A4.5 4.5 0 0 1 7.5 1z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+          <path d="M5.5 10a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <svg v-else width="14" height="14" viewBox="0 0 15 15" fill="none">
+          <path d="M7.5 1a4.5 4.5 0 0 1 4.5 4.5c0 2.5.5 3.5 1 4.5H2c.5-1 1-2 1-4.5A4.5 4.5 0 0 1 7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <path d="M5.5 10a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button @click="logout"
+              class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+        <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
+          <path d="M6 2H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3M10 10l3-3-3-3M13 7H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
   </header>
 </template>
 

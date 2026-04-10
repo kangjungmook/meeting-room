@@ -22,18 +22,16 @@
       </header>
 
       <div class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 flex items-center gap-1.5 overflow-x-auto">
-        <div v-for="stat in stats" :key="stat.label"
+        <button v-for="stat in stats" :key="stat.key"
+             @click="activeFilter = stat.key"
              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold flex-shrink-0 whitespace-nowrap transition-colors"
-             :class="stat.active
+             :class="activeFilter === stat.key
                ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'
-
-
-
-               : 'text-gray-400 dark:text-gray-600'">
+               : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'">
           <span class="tabular-nums font-black"
-                :style="stat.active ? { color: stat.color } : {}">{{ stat.count }}</span>
+                :style="activeFilter === stat.key ? { color: stat.color } : {}">{{ stat.count }}</span>
           <span>{{ stat.label }}</span>
-        </div>
+        </button>
       </div>
 
       <div class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 flex items-center gap-2.5 flex-wrap">
@@ -294,6 +292,7 @@ const {
 
 const detailBooking = ref(null);
 const refreshing = ref(false);
+const activeFilter = ref('all');
 
 const searchQuery = ref('');
 const filterRoom = ref('');
@@ -343,23 +342,29 @@ onUnmounted(() => { disconnectSse(); });
 const fmtRange = b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`;
 const fmtToday = b => `${dayjs(b.startTime).format('HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`;
 
-const sections = computed(() => [
-  { label: '오늘 회의', color: '#3b82f6', list: applyFilter(myBookingsToday.value), fmt: fmtToday, past: false,
+const allSections = computed(() => [
+  { key: 'today', label: '오늘 회의', color: '#3b82f6', list: applyFilter(myBookingsToday.value), fmt: fmtToday, past: false,
     dateRange: dayjs().format('M/D (ddd)') },
-  { label: '이번 주', color: '#8b5cf6', list: applyFilter(myBookingsThisWeek.value), fmt: fmtRange, past: false,
+  { key: 'week', label: '이번 주', color: '#8b5cf6', list: applyFilter(myBookingsThisWeek.value), fmt: fmtRange, past: false,
     dateRange: `${dayjs().startOf('week').format('M/D')} – ${dayjs().endOf('week').format('M/D')}` },
-  { label: '이후 일정', color: '#10b981', list: applyFilter(myBookingsUpcoming.value), fmt: fmtRange, past: false,
+  { key: 'later', label: '이후 일정', color: '#10b981', list: applyFilter(myBookingsUpcoming.value), fmt: fmtRange, past: false,
     dateRange: `${dayjs().endOf('week').add(1, 'day').format('M/D')} ~` },
-  { label: '지난 회의', color: '#94a3b8', list: applyFilter(myBookingsPast.value), fmt: fmtRange, past: true,
+  { key: 'past', label: '지난 회의', color: '#94a3b8', list: applyFilter(myBookingsPast.value), fmt: fmtRange, past: true,
     dateRange: `~ ${dayjs().subtract(1, 'day').format('M/D')}` },
 ]);
 
+const sections = computed(() =>
+  activeFilter.value === 'all'
+    ? allSections.value
+    : allSections.value.filter(s => s.key === activeFilter.value)
+);
+
 const stats = computed(() => [
-  { label: '전체', count: myBookings.value.length, color: '#374151', active: false },
-  { label: '오늘', count: myBookingsToday.value.length, color: '#3b82f6', active: myBookingsToday.value.length > 0 },
-  { label: '이번 주', count: myBookingsThisWeek.value.length, color: '#8b5cf6', active: myBookingsThisWeek.value.length > 0 },
-  { label: '이후', count: myBookingsUpcoming.value.length, color: '#10b981', active: myBookingsUpcoming.value.length > 0 },
-  { label: '지난', count: myBookingsPast.value.length, color: '#94a3b8', active: false },
+  { key: 'all',   label: '전체', count: myBookings.value.length,          color: '#374151' },
+  { key: 'today', label: '오늘', count: myBookingsToday.value.length,      color: '#3b82f6' },
+  { key: 'week',  label: '이번 주', count: myBookingsThisWeek.value.length, color: '#8b5cf6' },
+  { key: 'later', label: '이후', count: myBookingsUpcoming.value.length,   color: '#10b981' },
+  { key: 'past',  label: '지난', count: myBookingsPast.value.length,       color: '#94a3b8' },
 ]);
 </script>
 

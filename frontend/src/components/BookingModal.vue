@@ -44,7 +44,7 @@
       <!-- 회의 제목 -->
       <div class="flex flex-col gap-1.5">
         <label class="text-[12px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-wider">회의 제목 <span class="text-red-400">*</span></label>
-        <input v-model="form.title" type="text" placeholder="예) 주간 팀 미팅" required
+        <input v-model="form.title" type="text" placeholder="예) 주간 회의" required
           class="w-full bg-white dark:bg-gray-800 border-2 border-slate-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-[14px] font-bold text-slate-800 dark:text-gray-100 outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-all placeholder:text-slate-300 dark:placeholder:text-gray-600 placeholder:font-normal" />
       </div>
 
@@ -86,8 +86,8 @@
         />
       </div>
 
-      <!-- 반복 (날짜 바로 아래, 새 예약만) -->
-      <div v-if="!editBooking" class="flex flex-col gap-2">
+      <!-- 반복 -->
+      <div class="flex flex-col gap-2">
         <label class="text-[12px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-wider">반복</label>
 
         <!-- 타입 선택 -->
@@ -543,7 +543,7 @@ const submitBooking = async () => {
   isSubmitting.value = true;
   try {
     if (editBooking) {
-      const payload = {
+      const basePayload = {
         roomId:      form.roomId,
         title:       form.title,
         organizer:   userName,
@@ -553,7 +553,17 @@ const submitBooking = async () => {
         startTime:   `${form.startDate}T${selectedStart.value}:00`,
         endTime:     `${form.startDate}T${selectedEnd.value}:00`,
       };
-      await api.put(`/bookings/${editBooking.id}`, payload);
+      // 기존 예약 수정
+      await api.put(`/bookings/${editBooking.id}`, basePayload);
+      // 반복 날짜 중 현재 날짜 제외한 나머지는 새 예약으로 생성
+      const extraDates = generateDates().filter(d => d !== form.startDate);
+      for (const date of extraDates) {
+        await api.post('/bookings', {
+          ...basePayload,
+          startTime: `${date}T${selectedStart.value}:00`,
+          endTime:   `${date}T${selectedEnd.value}:00`,
+        });
+      }
     } else {
       const dates = generateDates();
       for (const date of dates) {
