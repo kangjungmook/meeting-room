@@ -74,8 +74,8 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import api from '../api';
-import AppIcon from './icons/AppIcon.vue';
+import api from '../../api';
+import AppIcon from '../../components/icons/AppIcon.vue';
 
 dayjs.locale('ko');
 

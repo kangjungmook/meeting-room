@@ -126,7 +126,7 @@
             <AppIcon name="alert-circle" :size="12" class="text-white" />
             점검 모드
           </button>
-          <button v-if="activeTab === 'rooms'" @click="roomsTabRef?.openModal()"
+          <button v-if="activeTab === 'rooms'" @click="routeViewRef?.openModal?.()"
             class="flex items-center gap-2 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-[14px] font-bold transition-all">
             <AppIcon name="plus" :size="15" />
             회의실 추가
@@ -149,17 +149,9 @@
 
       <!-- Main content -->
       <main class="flex-1 overflow-auto px-4 py-5 md:px-6 md:py-6 custom-scrollbar">
-        <AdminDashboard    v-if="activeTab === 'dashboard'"    :isMobile="isMobile" />
-        <AdminRooms        v-if="activeTab === 'rooms'"        :isMobile="isMobile" ref="roomsTabRef" />
-        <AdminBookings     v-if="activeTab === 'bookings'"     :isMobile="isMobile" />
-        <AdminLogs         v-if="activeTab === 'logs'" />
-        <AdminUsers v-show="activeTab === 'users-all'"      filter="ALL"      :isMobile="isMobile" />
-        <AdminUsers v-show="activeTab === 'users-pending'"  filter="PENDING"  :isMobile="isMobile" />
-        <AdminUsers v-show="activeTab === 'users-approved'" filter="APPROVED" :isMobile="isMobile" />
-        <AdminUsers v-show="activeTab === 'users-rejected'" filter="REJECTED" :isMobile="isMobile" />
-        <AdminNotification v-if="activeTab === 'notification'" />
-        <AdminSystem       v-if="activeTab === 'system'" />
-        <AdminReset        v-if="activeTab === 'reset'" />
+        <router-view v-slot="{ Component }">
+          <component :is="Component" ref="routeViewRef" :is-mobile="isMobile" />
+        </router-view>
       </main>
     </div>
 
@@ -179,19 +171,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useAdmin } from '../composables/useAdmin';
-import { adminToast } from '../composables/admin/useAdminToast';
-import api from '../api';
-import AppIcon from './icons/AppIcon.vue';
-
-import AdminDashboard    from './admin/AdminDashboard.vue';
-import AdminRooms        from './admin/AdminRooms.vue';
-import AdminBookings     from './admin/AdminBookings.vue';
-import AdminLogs         from './admin/AdminLogs.vue';
-import AdminUsers        from './admin/AdminUsers.vue';
-import AdminNotification from './admin/AdminNotification.vue';
-import AdminSystem       from './admin/AdminSystem.vue';
-import AdminReset        from './admin/AdminReset.vue';
+import { useAdmin } from '../../composables/useAdmin';
+import { adminToast } from '../../composables/admin/useAdminToast';
+import api from '../../api';
+import AppIcon from '../../components/icons/AppIcon.vue';
 
 const {
   activeTab, notifSetting, pendingCount, currentUser,
@@ -224,7 +207,7 @@ const navGroups = [
 const showDrawer  = ref(true);
 const isMobile    = ref(window.innerWidth < 768);
 const mobileOpen  = ref(false);
-const roomsTabRef = ref(null);
+const routeViewRef = ref(null);
 
 const currentTab = computed(() => tabs.find(t => t.key === activeTab.value));
 

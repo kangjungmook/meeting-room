@@ -137,9 +137,9 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api';
-import AppIcon from './icons/AppIcon.vue';
-import { refreshCurrentUser } from '../composables/useApp';
+import api from '../../api';
+import AppIcon from '../../components/icons/AppIcon.vue';
+import { refreshCurrentUser } from '../../composables/useApp';
 
 const router = useRouter();
 

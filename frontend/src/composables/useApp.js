@@ -11,7 +11,8 @@
  *   composables/app/useBookingData.js   — rooms / bookings / myBookings / API
  *   composables/app/useBookingHelpers.js — 헬퍼 함수 / 레이아웃 계산
  *   composables/app/useBookingPanel.js  — 예약 패널 / 취소 다이얼로그 / 툴팁
- *   composables/app/useNotifications.js — 토스트 / FCM / SSE
+ *   composables/app/useToast.js          — 토스트 시스템
+ *   composables/app/useNotifications.js — 다크모드 / FCM / SSE / 사용자 알림 설정
  */
 
 import { watch, nextTick } from 'vue';
@@ -25,6 +26,7 @@ export * from './app/useCalendar';
 export * from './app/useBookingData';
 export * from './app/useBookingHelpers';
 export * from './app/useBookingPanel';
+export * from './app/useToast';
 export * from './app/useNotifications';
 
 // ── 내부 의존성 (배럴에서 조합) ───────────────────────────────
@@ -96,7 +98,10 @@ import {
   tooltip, detailTarget, popoverStyle, showTooltip, pinTooltip, openDetail,
 } from './app/useBookingPanel';
 import {
-  toasts, toastDuration, addToast, userNotifPrefs, showUserSettings, saveNotifPrefs,
+  toasts, toastDuration, addToast,
+} from './app/useToast';
+import {
+  userNotifPrefs, showUserSettings, saveNotifPrefs,
   notifPermission, initFcm, requestNotifPermission, connectSse, disconnectSse,
   darkMode, toggleDarkMode, applyNotifPrefs,
 } from './app/useNotifications';

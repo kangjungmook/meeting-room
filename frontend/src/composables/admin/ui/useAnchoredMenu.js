@@ -4,12 +4,6 @@ function clamp(n, min, max) {
   return Math.min(Math.max(n, min), max);
 }
 
-/**
- * Anchored floating panel position helper.
- * Default matches existing patterns:
- * - admin menu: fixed panel, positioned by top + right
- * - date picker: fixed panel, positioned by top + left + width + maxHeight
- */
 export function useAnchoredMenu({
   open,
   anchorEl,

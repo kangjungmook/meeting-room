@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { toasts } from '../../composables/app/useNotifications';
+import { toasts } from '../../composables/useApp';
 
 const dismiss = (id) => { toasts.value = toasts.value.filter(t => t.id !== id); };
 </script>

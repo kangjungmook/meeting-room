@@ -1,12 +1,10 @@
 ﻿<template>
-  <SettingsPageDesktop v-if="!isMobile" />
-  <SettingsPageMobile v-else />
+  <SettingsPageContent :is-mobile="isMobile" />
 </template>
 
 <script setup>
-import { useApp } from '../composables/useApp';
-import SettingsPageDesktop from './settings/SettingsPageDesktop.vue';
-import SettingsPageMobile from './settings/SettingsPageMobile.vue';
+import { useApp } from '../../composables/useApp';
+import SettingsPageContent from '../../components/settings/SettingsPageContent.vue';
 
 const { isMobile } = useApp();
 </script>

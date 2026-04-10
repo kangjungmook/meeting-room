@@ -46,10 +46,7 @@
           </div>
           <div class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl border border-slate-200">
             <span class="text-[14px] font-semibold text-slate-700">활성화</span>
-            <button type="button" @click="modal.form.isActive = !modal.form.isActive"
-              :class="['relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none', modal.form.isActive ? 'bg-indigo-500' : 'bg-slate-300']">
-              <span :class="['absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-200', modal.form.isActive ? 'left-[22px]' : 'left-0.5']"></span>
-            </button>
+            <ToggleSwitch v-model="modal.form.isActive" inactive-class="bg-slate-300" />
           </div>
           <div class="flex gap-3 pt-1">
             <button type="button" @click="modal.show = false"
@@ -70,6 +67,7 @@ import { reactive } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
 import AdminRoomsTable from './rooms/AdminRoomsTable.vue';
 import AdminRoomsCards from './rooms/AdminRoomsCards.vue';
+import ToggleSwitch from '../ui/ToggleSwitch.vue';
 
 const { allRooms, createRoom, updateRoom, deleteRoom, toggleRoom } = useAdmin();
 const props = defineProps({ isMobile: Boolean });

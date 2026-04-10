@@ -1,12 +1,10 @@
 ﻿<template>
-  <MyBookingsPageDesktop v-if="!isMobile" />
-  <MyBookingsPageMobile v-else />
+  <MyBookingsPageContent :is-mobile="isMobile" />
 </template>
 
 <script setup>
-import { useApp } from '../composables/useApp';
-import MyBookingsPageDesktop from './myBookings/MyBookingsPageDesktop.vue';
-import MyBookingsPageMobile from './myBookings/MyBookingsPageMobile.vue';
+import { useApp } from '../../composables/useApp';
+import MyBookingsPageContent from '../../components/myBookings/MyBookingsPageContent.vue';
 
 const { isMobile } = useApp();
 </script>

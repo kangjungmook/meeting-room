@@ -58,8 +58,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api';
-import AppIcon from './icons/AppIcon.vue';
+import api from '../../api';
+import AppIcon from '../../components/icons/AppIcon.vue';
 
 const router   = useRouter();
 const newPw    = ref('');

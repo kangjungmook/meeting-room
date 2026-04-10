@@ -92,7 +92,44 @@ const stats = computed(() => [
 ]);
 
 // ── 네비게이션 탭 ─────────────────────────────────────────────
-const activeTab = ref('dashboard');
+const adminTabToPath = {
+  dashboard: '/admin/dashboard',
+  rooms: '/admin/rooms',
+  bookings: '/admin/bookings',
+  'users-all': '/admin/users',
+  'users-pending': '/admin/users/pending',
+  'users-approved': '/admin/users/approved',
+  'users-rejected': '/admin/users/rejected',
+  logs: '/admin/logs',
+  reset: '/admin/reset',
+  notification: '/admin/notification',
+  system: '/admin/system',
+};
+
+const adminPathToTab = {
+  '/admin': 'dashboard',
+  '/admin/dashboard': 'dashboard',
+  '/admin/rooms': 'rooms',
+  '/admin/bookings': 'bookings',
+  '/admin/users': 'users-all',
+  '/admin/users/pending': 'users-pending',
+  '/admin/users/approved': 'users-approved',
+  '/admin/users/rejected': 'users-rejected',
+  '/admin/logs': 'logs',
+  '/admin/reset': 'reset',
+  '/admin/notification': 'notification',
+  '/admin/system': 'system',
+};
+
+const activeTab = computed({
+  get: () => adminPathToTab[router.currentRoute.value.path] ?? 'dashboard',
+  set: (tab) => {
+    const nextPath = adminTabToPath[tab] ?? '/admin/dashboard';
+    if (router.currentRoute.value.path !== nextPath) {
+      router.push(nextPath);
+    }
+  },
+});
 
 // ── 초기화 (리셋) API ─────────────────────────────────────────
 const resetBookings    = async () => { await api.delete('/admin/bookings/reset');           fetchAll(); };
