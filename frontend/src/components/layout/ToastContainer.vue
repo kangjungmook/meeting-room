@@ -1,3 +1,4 @@
+
 <template>
   <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none w-full px-4">
     <Transition v-for="toast in toasts" :key="toast.id" name="toast">

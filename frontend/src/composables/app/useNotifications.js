@@ -1,6 +1,7 @@
 import { ref, reactive } from 'vue';
 import api from '../../api';
 import { fetchBookings, fetchMyBookings } from './useBookingData';
+import { createSseManager } from '../../utils/sse';
 
 // ──  토스트 시스템 알림 상태 ──────────────────────────────────────────
 export const toasts        = ref([]);
@@ -153,43 +154,49 @@ export const requestNotifPermission = async () => {
 };
 
 // ── SSE  구독 및 핸들링 ──────────────────────────────────────────
-let _sseSource = null;
-
-export const connectSse = () => {
-  if (_sseSource) _sseSource.close();
-  const token = localStorage.getItem('token') || '';
-  _sseSource = new EventSource(`/api/sse/subscribe?token=${token}`);
-
-  _sseSource.addEventListener('booking', (e) => {
-    try {
-      const { type, data } = JSON.parse(e.data);
-      fetchBookings();
-      if (type === 'CREATED' && userNotifPrefs.toastCreated) {
-        queueCreatedToast(data.organizer);
-      } else if (type === 'CANCELLED' && userNotifPrefs.toastCancelled) {
-        addToast('❌ 예약이 취소되었습니다.', 'info');
-      } else if (type === 'UPDATED' && userNotifPrefs.toastUpdated) {
-        addToast(`📝 ${data.organizer}님이 예약을 수정했습니다.`, 'info');
+let _firstOpen = true;
+let _lastMyBookingsFetchAt = 0;
+const _sse = createSseManager({
+  getUrl: () => {
+    const token = localStorage.getItem('token') || '';
+    return `/api/sse/subscribe?token=${token}`;
+  },
+  listeners: {
+    booking: (e) => {
+      try {
+        const { type, data } = JSON.parse(e.data);
+        fetchBookings();
+        // "내 예약" 패널도 실시간 반영(과도한 연속 호출은 약하게 제한)
+        const now = Date.now();
+        if (now - _lastMyBookingsFetchAt > 1200) {
+          _lastMyBookingsFetchAt = now;
+          fetchMyBookings();
+        }
+        if (type === 'CREATED' && userNotifPrefs.toastCreated) {
+          queueCreatedToast(data.organizer);
+        } else if (type === 'CANCELLED' && userNotifPrefs.toastCancelled) {
+          addToast('❌ 예약이 취소되었습니다.', 'info');
+        } else if (type === 'UPDATED' && userNotifPrefs.toastUpdated) {
+          addToast(`📝 ${data.organizer}님이 예약을 수정했습니다.`, 'info');
+        }
+      } catch (err) {
+        console.error('SSE Parsing Error:', err);
       }
-    } catch (err) {
-      console.error('SSE Parsing Error:', err);
-    }
-  });
-
-  // 재연결 시 누락된 예약 이벤트 보완
-  let _sseFirstOpen = true;
-  _sseSource.onopen = () => {
-    if (_sseFirstOpen) { _sseFirstOpen = false; return; }
+    },
+  },
+  onOpen: () => {
+    // 재연결 시 누락된 예약 이벤트 보완
+    if (_firstOpen) { _firstOpen = false; return; }
     fetchBookings();
     fetchMyBookings();
-  };
+  },
+});
 
-  _sseSource.onerror = () => {
-    _sseSource.close();
-    setTimeout(connectSse, 5000);
-  };
+export const connectSse = () => {
+  _firstOpen = true;
+  _sse.connect();
 };
 
 export const disconnectSse = () => {
-  if (_sseSource) _sseSource.close();
+  _sse.disconnect();
 };

@@ -13,8 +13,8 @@
       <!-- Content -->
       <main class="flex-1 overflow-hidden relative">
         <Transition :name="'slide-' + slideDir">
-          <div :key="viewMode" class="absolute inset-0 overflow-auto p-3 custom-scrollbar flex flex-col gap-4"
-               :class="isMobile ? 'pb-44' : 'pb-4'">
+          <div :key="viewMode" class="absolute inset-0 overflow-auto custom-scrollbar flex flex-col gap-4"
+               :class="isMobile ? 'p-2 pb-44' : 'p-3 pb-4'">
             <CalendarDay   v-if="viewMode === 'day'"   />
             <CalendarWeek  v-if="viewMode === 'week'"  />
             <CalendarMonth v-if="viewMode === 'month'" />
@@ -83,184 +83,7 @@
     <UserSettingsModal v-if="showUserSettings" />
 
     <!-- ── 내 예약 패널 ── -->
-      <Transition name="my-bookings">
-      <div v-if="showMyBookings && isMobile" class="fixed inset-0 z-50 flex flex-col justify-end">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showMyBookings = false"></div>
-        <div class="relative flex flex-col bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl overflow-hidden" style="max-height:92dvh;min-height:60dvh">
-
-          <!-- 헤더 -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                <AppIcon name="user" :size="16" class="text-white" />
-              </div>
-              <div>
-                <h3 class="text-[15px] font-black text-gray-800 dark:text-gray-100 leading-tight">내 예약</h3>
-                <p class="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">{{ myBookings.length }}건</p>
-              </div>
-            </div>
-            <button @click="showMyBookings = false"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-              <AppIcon name="close" :size="16" />
-            </button>
-          </div>
-
-          <!-- 내용 -->
-          <div class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5 custom-scrollbar">
-
-            <!-- 빈 상태 -->
-            <div v-if="myBookings.length === 0"
-                 class="flex flex-col items-center justify-center py-16 gap-3">
-              <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <AppIcon name="calendar" :size="22" class="text-slate-400" />
-              </div>
-              <p class="text-[14px] font-semibold text-gray-400">예약이 없습니다</p>
-            </div>
-
-            <template v-else>
-              <!-- 섹션별 그룹 렌더링 -->
-              <template v-for="section in [
-                { label: '오늘 회의',   list: myBookingsToday,    fmt: b => `${dayjs(b.startTime).format('HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}` },
-                { label: '이번 주 회의', list: myBookingsThisWeek, fmt: b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}` },
-                { label: '이후 일정',   list: myBookingsUpcoming, fmt: b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}` },
-              ]" :key="section.label">
-                <div v-if="section.list.length > 0">
-                  <p class="text-[11px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 px-1 mb-2">{{ section.label }}</p>
-                  <div class="flex flex-col gap-2">
-                    <div v-for="b in section.list" :key="b.id"
-                         class="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden flex hover:shadow-md transition-all">
-                      <div class="w-1.5 flex-shrink-0" :style="{background: getRoomColor(b.roomId)}"></div>
-                      <div class="flex-1 px-4 py-3">
-                        <div class="flex items-start justify-between gap-2">
-                          <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white flex-shrink-0"
-                                    :style="{background: getRoomColor(b.roomId)}">{{ getRoomName(b.roomId) }}</span>
-                              <span :class="b.userId === currentUser.id ? 'bg-blue-100 text-indigo-600' : 'bg-amber-100 text-amber-600'"
-                                    class="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0">
-                                {{ b.userId === currentUser.id ? '예약자' : '참석자' }}
-                              </span>
-                            </div>
-                            <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 truncate">{{ b.title }}</p>
-                            <p class="text-[12px] font-semibold text-slate-500 dark:text-gray-400 mt-0.5 tabular-nums">{{ section.fmt(b) }}</p>
-                            <p class="flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 mt-1">
-                              <AppIcon name="user" :size="10" cls="flex-shrink-0" />
-                              {{ b.organizer }}
-                            </p>
-                            <p v-if="b.attendeeIds?.length || b.externalAttendeeNames?.length" class="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
-                              <AppIcon name="users" :size="11" cls="flex-shrink-0" />
-                              {{ resolveAttendees(b.attendeeIds, b.externalAttendeeNames) }}
-                            </p>
-                          </div>
-                          <div v-if="canEditOrCancel(b)" class="flex gap-1.5 flex-shrink-0 pt-0.5">
-                            <button @click="openEditModal(b); showMyBookings = false"
-                                    class="w-7 h-7 flex items-center justify-center rounded-lg bg-indigo-50 text-blue-600 hover:bg-blue-100 transition-all">
-                              <AppIcon name="edit" :size="13" />
-                            </button>
-                            <button @click="confirmCancel(b); showMyBookings = false"
-                                    class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 transition-all">
-                              <AppIcon name="trash" :size="13" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </template>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- ── 내 예약 패널 (데스크톱 우측 슬라이드) ── -->
-    <Transition name="my-bookings-panel">
-      <div v-if="showMyBookings && !isMobile"
-           class="fixed right-0 top-0 bottom-0 z-50 w-[380px] flex flex-col bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
-        <div class="fixed inset-0 z-[-1]" @click="showMyBookings = false"></div>
-
-          <!-- 헤더 -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                <AppIcon name="user" :size="16" class="text-white" />
-              </div>
-              <div>
-                <h3 class="text-[15px] font-black text-gray-800 dark:text-gray-100 leading-tight">내 예약</h3>
-                <p class="text-[11px] text-gray-400 dark:text-gray-500 leading-tight">{{ myBookings.length }}건</p>
-              </div>
-            </div>
-            <button @click="showMyBookings = false"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-              <AppIcon name="close" :size="16" />
-            </button>
-          </div>
-
-          <!-- 내용 -->
-          <div class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5 custom-scrollbar">
-            <!-- 빈 상태 -->
-            <div v-if="myBookings.length === 0"
-                 class="flex flex-col items-center justify-center py-16 gap-3">
-              <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <AppIcon name="calendar" :size="22" class="text-slate-400" />
-              </div>
-              <p class="text-[14px] font-semibold text-gray-400">예약이 없습니다</p>
-            </div>
-            <template v-else>
-              <template v-for="section in [
-                { label: '오늘 회의',   list: myBookingsToday,    fmt: b => `${dayjs(b.startTime).format('HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}` },
-                { label: '이번 주 회의', list: myBookingsThisWeek, fmt: b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}` },
-                { label: '이후 일정',   list: myBookingsUpcoming, fmt: b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}` },
-              ]" :key="section.label">
-                <div v-if="section.list.length > 0">
-                  <p class="text-[11px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 px-1 mb-2">{{ section.label }}</p>
-                  <div class="flex flex-col gap-2">
-                    <div v-for="b in section.list" :key="b.id"
-                         class="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden flex hover:shadow-md transition-all">
-                      <div class="w-1.5 flex-shrink-0" :style="{background: getRoomColor(b.roomId)}"></div>
-                      <div class="flex-1 px-4 py-3">
-                        <div class="flex items-start justify-between gap-2">
-                          <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white flex-shrink-0"
-                                    :style="{background: getRoomColor(b.roomId)}">{{ getRoomName(b.roomId) }}</span>
-                              <span :class="b.userId === currentUser.id ? 'bg-blue-100 text-indigo-600' : 'bg-amber-100 text-amber-600'"
-                                    class="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0">
-                                {{ b.userId === currentUser.id ? '예약자' : '참석자' }}
-                              </span>
-                            </div>
-                            <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 truncate">{{ b.title }}</p>
-                            <p class="text-[12px] font-semibold text-slate-500 dark:text-gray-400 mt-0.5 tabular-nums">{{ section.fmt(b) }}</p>
-                            <p class="flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500 mt-1">
-                              <AppIcon name="user" :size="10" cls="flex-shrink-0" />
-                              {{ b.organizer }}
-                            </p>
-                            <p v-if="b.attendeeIds?.length || b.externalAttendeeNames?.length" class="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
-                              <AppIcon name="users" :size="11" cls="flex-shrink-0" />
-                              {{ resolveAttendees(b.attendeeIds, b.externalAttendeeNames) }}
-                            </p>
-                          </div>
-                          <div v-if="canEditOrCancel(b)" class="flex gap-1.5 flex-shrink-0 pt-0.5">
-                            <button @click="openEditModal(b); showMyBookings = false"
-                                    class="w-7 h-7 flex items-center justify-center rounded-lg bg-indigo-50 text-blue-600 hover:bg-blue-100 transition-all">
-                              <AppIcon name="edit" :size="13" />
-                            </button>
-                            <button @click="confirmCancel(b); showMyBookings = false"
-                                    class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 transition-all">
-                              <AppIcon name="trash" :size="13" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </template>
-          </div>
-      </div>
-    </Transition>
+    <MyBookingsPanel />
 
     <!-- ── 토스트 알림 ── -->
     <ToastContainer />
@@ -271,23 +94,23 @@
 <script setup>
 import { onMounted, onUnmounted, nextTick, watch, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import dayjs from 'dayjs';
 import { useApp } from './composables/useApp';
 import api from './api';
 import AppIcon from './components/icons/AppIcon.vue';
 
-import BookingModal   from './components/BookingModal.vue';
-import AppSidebar     from './components/layout/AppSidebar.vue';
-import AppHeader      from './components/layout/AppHeader.vue';
-import MobileDrawer   from './components/layout/MobileDrawer.vue';
-import BookingTooltip from './components/booking/BookingTooltip.vue';
-import RoomDetailModal from './components/booking/RoomDetailModal.vue';
+import BookingModal      from './components/BookingModal.vue';
+import AppSidebar        from './components/layout/AppSidebar.vue';
+import AppHeader         from './components/layout/AppHeader.vue';
+import MobileDrawer      from './components/layout/MobileDrawer.vue';
+import MyBookingsPanel   from './components/layout/MyBookingsPanel.vue';
+import BookingTooltip    from './components/booking/BookingTooltip.vue';
+import RoomDetailModal   from './components/booking/RoomDetailModal.vue';
 import CancelModal       from './components/booking/CancelModal.vue';
 import UserSettingsModal from './components/layout/UserSettingsModal.vue';
 import ToastContainer    from './components/layout/ToastContainer.vue';
-import CalendarDay    from './components/calendar/CalendarDay.vue';
-import CalendarWeek   from './components/calendar/CalendarWeek.vue';
-import CalendarMonth  from './components/calendar/CalendarMonth.vue';
+import CalendarDay       from './components/calendar/CalendarDay.vue';
+import CalendarWeek      from './components/calendar/CalendarWeek.vue';
+import CalendarMonth     from './components/calendar/CalendarMonth.vue';
 
 const router = useRouter();
 
@@ -295,14 +118,11 @@ const {
   isMobile, slideDir, showModal, showDrawer,
   panelWidth, resizing, modalKey, modalInit, editBooking,
   startResize, onResizeMove, onResizeEnd, closeModal,
-  showMyBookings, myBookings, myBookingsToday, myBookingsThisWeek, myBookingsUpcoming,
-  getRoomColor, getRoomName, resolveAttendees, canEditOrCancel,
-  openEditModal, confirmCancel,
   rooms, bookings, targetDate,
-  currentUser, showUserSettings,
+  showUserSettings,
   fetchRooms, fetchBookings, fetchMyBookings, connectSse, disconnectSse,
   initFcm, scrollDayView, viewMode, userMap,
-  toastDuration, userNotifPrefs, applyNotifPrefs,
+  applyNotifPrefs,
 } = useApp();
 
 // 모바일 모달 열릴 때 body 스크롤 잠금 (배경 캘린더 고정)
@@ -326,16 +146,14 @@ const onSheetTouchStart = (e) => {
 
 const onSheetTouchMove = (e) => {
   const dy = e.touches[0].clientY - _swipeStartY;
-  if (dy <= 0) return; // 위로 드래그 무시
+  if (dy <= 0) return;
   _swipeDeltaY = dy;
 
-  // 시트 이동
   if (sheetRef.value)
     sheetRef.value.style.transform = `translateY(${dy}px)`;
 
-  // 백드롭 드래그 비율만큼 페이드 (0px→0%, 120px→100% 사라짐)
   if (backdropRef.value) {
-    const ratio   = Math.min(dy / CLOSE_THRESHOLD, 1);
+    const ratio = Math.min(dy / CLOSE_THRESHOLD, 1);
     backdropRef.value.style.opacity = String(1 - ratio);
   }
 };
@@ -343,7 +161,6 @@ const onSheetTouchMove = (e) => {
 const onSheetTouchEnd = () => {
   if (!sheetRef.value) return;
   if (_swipeDeltaY > CLOSE_THRESHOLD) {
-    // 임계값 초과 → 시트+백드롭 동시에 사라지고 닫기
     const t = 'transform 0.25s ease, opacity 0.25s ease';
     sheetRef.value.style.transition    = t;
     sheetRef.value.style.transform     = 'translateY(100%)';
@@ -353,7 +170,6 @@ const onSheetTouchEnd = () => {
     }
     setTimeout(() => closeModal(), 240);
   } else {
-    // 임계값 미만 → 시트+백드롭 원위치 복귀
     const t = 'transform 0.3s cubic-bezier(0.32,0.72,0,1)';
     sheetRef.value.style.transition    = t;
     sheetRef.value.style.transform     = 'translateY(0)';
@@ -409,18 +225,6 @@ onUnmounted(() => {
 .slide-left-leave-to    { transform: translateX(-30px); opacity: 0; }
 .slide-right-enter-from { transform: translateX(-30px); opacity: 0; }
 .slide-right-leave-to   { transform: translateX(30px);  opacity: 0; }
-
-/* ── 내 예약 패널 (모바일 바텀시트) ── */
-.my-bookings-enter-active { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
-.my-bookings-leave-active { transition: all 0.2s ease-in; }
-.my-bookings-enter-from   { opacity: 0; transform: translateY(100%); }
-.my-bookings-leave-to     { opacity: 0; transform: translateY(100%); }
-
-/* ── 내 예약 패널 (데스크톱 우측 슬라이드) ── */
-.my-bookings-panel-enter-active { transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease; }
-.my-bookings-panel-leave-active { transition: transform 0.25s ease-in, opacity 0.2s ease-in; }
-.my-bookings-panel-enter-from   { transform: translateX(100%); opacity: 0; }
-.my-bookings-panel-leave-to     { transform: translateX(100%); opacity: 0; }
 
 /* ── 스크롤바 ── */
 .custom-scrollbar::-webkit-scrollbar       { width: 4px; }

@@ -79,31 +79,32 @@
 
   <!-- 모바일 헤더 -->
   <header v-else class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-    <div class="flex items-center justify-between px-4 py-2.5 gap-2">
+    <!-- 1줄: 메뉴 + 뷰탭(가로스크롤) + 아이콘 -->
+    <div class="grid grid-cols-[auto_1fr_auto] items-center px-3 py-2 gap-2">
       <button @click="showDrawer = true"
               class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
           <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </button>
-      <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
-        <button v-for="m in modes" :key="m.val" @click="viewMode = m.val"
-                :class="[
-                  'px-3 py-1.5 rounded-md text-[12px] font-semibold transition-all whitespace-nowrap',
-                  viewMode === m.val ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50 shadow-sm' : 'text-gray-500 dark:text-gray-400'
-                ]">
-          {{ m.name }}
-        </button>
+      <div class="min-w-0 flex justify-center">
+        <div class="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5 overflow-x-auto no-scrollbar max-w-full">
+          <button v-for="m in modes" :key="m.val" @click="viewMode = m.val"
+                  :class="[
+                    'px-3 py-1.5 rounded-md text-[12px] font-semibold transition-all whitespace-nowrap flex-shrink-0',
+                    viewMode === m.val ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50 shadow-sm' : 'text-gray-500 dark:text-gray-400'
+                  ]">
+            {{ m.name }}
+          </button>
+        </div>
       </div>
-      <div class="flex items-center gap-1.5 flex-shrink-0">
-        <div class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center ring-1 ring-blue-100">
+
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <div class="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center ring-1 ring-blue-100 dark:ring-blue-900/30">
           <svg width="12" height="12" viewBox="0 0 15 15" fill="none">
             <circle cx="7.5" cy="5" r="3" stroke="#2563eb" stroke-width="1.5"/>
             <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-        </div>
-        <div class="leading-tight">
-          <p class="text-[12px] font-semibold text-gray-800 dark:text-gray-100">{{ currentUser.name }}</p>
         </div>
         <!-- 알림 버튼 (모바일 전용) -->
         <button @click="requestNotifPermission"
@@ -128,14 +129,16 @@
         </button>
       </div>
     </div>
-    <div class="flex items-center justify-center gap-1.5 px-4 pb-2.5">
+
+    <!-- 2줄: 날짜 네비 -->
+    <div class="flex items-center justify-center gap-1.5 px-3 pb-2.5">
       <button @click="moveDate(-1)"
               class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
         <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
           <path d="M11 4L7 9l4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <span class="text-[12.5px] font-semibold text-gray-800 dark:text-gray-100 text-center whitespace-nowrap min-w-[140px]">{{ dateLabel }}</span>
+      <span class="text-[12.5px] font-semibold text-gray-800 dark:text-gray-100 text-center whitespace-nowrap px-1">{{ dateLabel }}</span>
       <button @click="moveDate(1)"
               class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
         <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
@@ -172,3 +175,8 @@ const logout = async () => {
   router.push('/');
 };
 </script>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+</style>

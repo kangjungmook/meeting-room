@@ -26,6 +26,9 @@
              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold flex-shrink-0 whitespace-nowrap transition-colors"
              :class="stat.active
                ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'
+
+
+
                : 'text-gray-400 dark:text-gray-600'">
           <span class="tabular-nums font-black"
                 :style="stat.active ? { color: stat.color } : {}">{{ stat.count }}</span>

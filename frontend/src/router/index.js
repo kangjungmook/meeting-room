@@ -7,11 +7,13 @@ import KioskSelector      from '../components/Kioskselector.vue';
 import KioskPage          from '../components/Kioskpage.vue';
 import LoginPage          from '../components/LoginPage.vue';
 import ChangePasswordPage from '../components/ChangePasswordPage.vue';
-import axios              from 'axios';
+import MaintenancePage    from '../components/MaintenancePage.vue';
+import { refreshAccessToken } from '../api';
 import { parseJwt }       from '../utils/parseJwt';
 
 const routes = [
   { path: '/',               component: LoginPage },
+  { path: '/maintenance',    component: MaintenancePage },
   { path: '/main',           component: App,               meta: { requiresLogin: true } },
   { path: '/my-bookings',   component: MyBookingsPage,    meta: { requiresLogin: true } },
   { path: '/settings',     component: SettingsPage,      meta: { requiresLogin: true } },
@@ -31,19 +33,26 @@ async function tryAutoLogin() {
   const refreshToken = localStorage.getItem('refreshToken');
   if (!refreshToken) return;
   try {
-    const res = await axios.post('/api/auth/refresh', { refreshToken });
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('refreshToken', res.data.refreshToken);
-    sessionStorage.setItem('adminAuth', 'true');
+    const data = await refreshAccessToken(refreshToken);
+    if (data.token) localStorage.setItem('token', data.token);
+    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+
+    const payload = data.token ? parseJwt(data.token) : null;
+    if (payload?.role === 'ADMIN') sessionStorage.setItem('adminAuth', 'true');
+    else sessionStorage.removeItem('adminAuth');
   } catch {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('token');
+    sessionStorage.removeItem('adminAuth');
   }
 }
 
 let autoLoginDone = false;
 
 router.beforeEach(async (to) => {
+  // 점검 페이지는 인증과 무관하게 접근 허용
+  if (to.path === '/maintenance') return true;
+
   if (!autoLoginDone) {
     autoLoginDone = true;
     if (!localStorage.getItem('token') && localStorage.getItem('refreshToken')) {

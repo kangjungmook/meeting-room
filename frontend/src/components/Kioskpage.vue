@@ -284,6 +284,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import axios from 'axios';
 import AppIcon from './icons/AppIcon.vue';
+import { createSseManager } from '../utils/sse';
 
 const api = axios.create({
   baseURL: '/api',
@@ -522,24 +523,14 @@ const fetchBookings = async () => {
 };
 
 let clockTimer = null;
-let sseSource = null;
-let sseReconnectTimer = null;
 let popstateHandler = null;
 
-const connectSse = () => {
-  if (sseSource) return;
-  sseSource = new EventSource('/api/sse/subscribe');
-
-  sseSource.addEventListener('booking', () => {
-    fetchBookings();
-  });
-
-  sseSource.onerror = () => {
-    sseSource.close();
-    sseSource = null;
-    sseReconnectTimer = setTimeout(connectSse, 5000);
-  };
-};
+const _sse = createSseManager({
+  getUrl: () => '/api/sse/subscribe',
+  listeners: {
+    booking: () => fetchBookings(),
+  },
+});
 
 const handleBeforeUnload = (e) => {
   e.preventDefault();
@@ -580,7 +571,7 @@ onMounted(async () => {
     now.value = dayjs();
   }, 1000);
 
-  connectSse();
+  _sse.connect();
 
   // 브라우저 정책상 자동 fullscreen 불가 — 첫 클릭/터치 시 한 번만 시도
   const enterFullscreenOnce = async () => {
@@ -604,8 +595,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearInterval(clockTimer);
-  clearTimeout(sseReconnectTimer);
-  if (sseSource) { sseSource.close(); sseSource = null; }
+  _sse.disconnect();
 
   window.removeEventListener('beforeunload', handleBeforeUnload);
   window.removeEventListener('keydown', handleKeydown, true);

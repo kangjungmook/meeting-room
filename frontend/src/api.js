@@ -8,6 +8,11 @@ const api = axios.create({
   timeout: 10000,
 });
 
+export async function refreshAccessToken(refreshToken, timeout = 10000) {
+  const res = await axios.post('/api/auth/refresh', { refreshToken }, { timeout });
+  return res.data; // { token, refreshToken? }
+}
+
 // 요청마다 토큰 자동 첨부
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
@@ -33,16 +38,13 @@ api.interceptors.response.use(
     // 503 점검 모드
     if (err.response?.status === 503) {
       const msg = err.response?.data?.message || '현재 시스템 점검 중입니다.';
-      document.body.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#f8fafc;font-family:sans-serif;">
-          <div style="background:white;border:1px solid #e2e8f0;border-radius:16px;padding:40px 48px;text-align:center;max-width:400px;box-shadow:0 4px 24px #0001;">
-            <div style="width:56px;height:56px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M4 20h16L12 4 4 20z" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>
-            </div>
-            <h1 style="font-size:20px;font-weight:800;color:#1e293b;margin:0 0 8px;">시스템 점검 중</h1>
-            <p style="font-size:14px;color:#64748b;margin:0;">${msg}</p>
-          </div>
-        </div>`;
+      // API 레이어에서 DOM을 직접 덮어쓰지 않고, 라우팅으로 점검 화면을 보여준다.
+      try {
+        sessionStorage.setItem('maintenanceMessage', msg);
+      } catch {}
+      if (window.location.pathname !== '/maintenance') {
+        window.location.replace('/maintenance');
+      }
       return Promise.reject(err);
     }
     const originalRequest = err.config;
@@ -68,9 +70,10 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
       try {
-        const res = await axios.post('/api/auth/refresh', { refreshToken }, { timeout: 10000 });
-        const newToken = res.data.token;
+        const data = await refreshAccessToken(refreshToken, 10000);
+        const newToken = data.token;
         localStorage.setItem('token', newToken);
+        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
         processQueue(null, newToken);
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
