@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white flex items-center justify-center px-5 py-4 sm:p-6">
+  <div class="min-h-[100dvh] bg-white flex items-center justify-center px-5 py-4 sm:p-6">
     <div class="w-full max-w-[360px] flex flex-col gap-4 sm:gap-7">
 
         <!-- 브랜드 -->

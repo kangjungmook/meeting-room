@@ -120,8 +120,7 @@
 
             <!-- 알림 탭 -->
             <div v-if="activeTab === 'notifications'" class="flex flex-col min-h-full">
-              <div v-if="!isMobile"
-                   class="sticky top-0 z-10 flex items-center justify-between px-6 py-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+              <div class="sticky top-0 z-10 flex items-center justify-between px-6 py-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
                 <p class="text-[12.5px]">
                   <span v-if="isDirty" class="text-amber-500 font-semibold">● 저장되지 않은 변경사항</span>
                   <span v-else class="text-gray-300 dark:text-gray-600">저장됨</span>
@@ -220,23 +219,6 @@
                 </div>
               </div>
 
-              <!-- 모바일 저장 버튼 (sticky 하단) -->
-              <div v-if="isMobile"
-                   class="sticky bottom-0 z-10 px-4 pb-5 pt-3 bg-gradient-to-t from-[#F5F7FA] dark:from-gray-950 via-[#F5F7FA]/95 dark:via-gray-950/95 to-transparent">
-                <div class="flex items-center gap-3">
-                  <p class="flex-1 text-[12px] font-semibold truncate"
-                     :class="isDirty ? 'text-amber-500' : 'text-gray-400 dark:text-gray-600'">
-                    {{ isDirty ? '● 저장되지 않은 변경사항' : '저장됨' }}
-                  </p>
-                  <button @click="handleSave" :disabled="!isDirty"
-                          :class="isDirty
-                            ? 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/30'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'"
-                          class="px-6 py-2.5 rounded-xl text-[13px] font-bold transition-all">
-                    저장
-                  </button>
-                </div>
-              </div>
             </div>
 
             <!-- 도움말 탭 -->

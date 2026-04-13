@@ -27,7 +27,7 @@
         <div v-for="room in rooms" :key="room.id"
              class="flex border-b border-gray-100 dark:border-gray-800 last:border-b-0">
           <div class="w-28 px-2.5 flex-shrink-0 flex items-center gap-2 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 sticky left-0 z-10"
-               :style="{ minHeight: '90px' }">
+               :style="{ minHeight: '110px' }">
             <span class="w-1.5 h-8 rounded-full flex-shrink-0" :style="{ background: room.colorCode }"></span>
             <div class="min-w-0">
               <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{{ room.name }}</p>
@@ -44,12 +44,30 @@
 
             <div v-for="b in filterBookings(room.id, day).slice(0, 2)" :key="b.id"
                  @click.stop="pinTooltip(b, $event)"
-                 class="rounded-lg px-1.5 py-1 cursor-pointer transition-all hover:brightness-95 border-l-2"
+                 class="rounded-lg px-1.5 py-1.5 cursor-pointer transition-all hover:brightness-95 border-l-2"
                  :style="{ borderLeftColor: room.colorCode, background: room.colorCode + '18' }">
               <p class="text-[10px] font-bold truncate leading-tight" :style="{ color: room.colorCode }">
                 {{ dayjs(b.startTime).format('HH:mm') }}
               </p>
-              <p class="text-[9px] text-gray-600 dark:text-gray-300 truncate leading-tight">{{ b.title }}</p>
+              <p class="text-[9px] font-semibold text-gray-700 dark:text-gray-200 leading-tight mt-0.5 whitespace-nowrap">{{ b.title }}</p>
+              <div v-if="b.organizer" class="flex items-center gap-0.5 mt-0.5">
+                <!-- 사람 아이콘 (예약자) -->
+                <svg width="8" height="8" viewBox="0 0 15 15" fill="none" class="flex-shrink-0 text-gray-400">
+                  <circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <p class="text-[9px] text-gray-500 dark:text-gray-400 truncate leading-tight">{{ b.organizer }}</p>
+              </div>
+              <div v-if="resolveAttendees(b.attendeeIds, b.externalAttendeeNames)" class="flex items-center gap-0.5 mt-0.5">
+                <!-- 사람 2명 아이콘 (참여자) -->
+                <svg width="10" height="8" viewBox="0 0 18 14" fill="none" class="flex-shrink-0 text-gray-400">
+                  <circle cx="6" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M0.5 13c0-3 2.5-5.2 5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  <circle cx="12" cy="4" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M17.5 13c0-3-2.5-5.2-5.5-5.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                <p class="text-[9px] text-gray-500 dark:text-gray-400 truncate leading-tight">{{ resolveAttendees(b.attendeeIds, b.externalAttendeeNames) }}</p>
+              </div>
             </div>
             <div v-if="filterBookings(room.id, day).length > 2"
                  @click.stop="goToDay(day)"
@@ -80,7 +98,7 @@ import dayjs from 'dayjs';
 const {
   rooms, weekDays,
   pinTooltip, openQuickModal,
-  filterBookings,
+  filterBookings, resolveAttendees,
   goToDay,
 } = useApp();
 </script>

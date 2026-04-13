@@ -98,7 +98,7 @@
       </div>
 
       <!-- 새 예약 버튼 -->
-      <div class="flex-shrink-0 px-3 py-3">z
+      <div class="flex-shrink-0 px-3 py-3">
         <button @click="openNewBooking"
                 class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-[13px] fokzkznt-semibold transition-all shadow-sm">
           <AppIcon name="plus" :size="13" />

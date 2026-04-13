@@ -97,7 +97,7 @@
                     </svg>
                     {{ b.organizer }}
                   </p>
-                  <p v-if="chipMinutes(b.startTime, b.endTime) >= 60 && resolveAttendees(b.attendeeIds, b.externalAttendeeNames)"
+                  <p v-if="resolveAttendees(b.attendeeIds, b.externalAttendeeNames)"
                      class="hidden md:flex items-center gap-1 text-[11px] text-white/70 truncate mt-0.5"
                      style="text-shadow: 0 1px 2px rgba(0,0,0,0.3)">
                     <svg width="12" height="10" viewBox="0 0 18 14" fill="none" class="flex-shrink-0">

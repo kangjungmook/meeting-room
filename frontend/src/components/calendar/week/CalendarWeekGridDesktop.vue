@@ -37,7 +37,7 @@
 
           <div v-for="day in weekDays" :key="day.format()"
                :class="[
-                 'flex-1 border-r border-gray-100 dark:border-gray-800 last:border-r-0 p-2 flex flex-col gap-1.5 transition-colors',
+                 'flex-1 min-w-0 border-r border-gray-100 dark:border-gray-800 last:border-r-0 p-2 flex flex-col gap-1.5 transition-colors',
                  day.isSame(dayjs(), 'day') ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                ]"
                @click="openQuickModal(room.id, 9, day)">
@@ -48,7 +48,7 @@
                  @mouseenter="showTooltip(b, $event)"
                  @mouseleave="!tooltip.pinned && (tooltip.show = false)"
                  @click.stop="pinTooltip(b, $event)"
-                 class="rounded-xl px-3 py-2 cursor-pointer transition-all hover:brightness-95 border-l-[3px]"
+                 class="rounded-xl px-3 py-2 cursor-pointer transition-all hover:brightness-95 border-l-[3px] overflow-hidden"
                  :style="{ borderLeftColor: room.colorCode, background: room.colorCode + '18' }">
               <p class="text-[13px] font-black text-gray-800 dark:text-gray-100 truncate leading-tight">{{ b.title }}</p>
               <p class="text-[12px] font-semibold mt-0.5" :style="{ color: room.colorCode }">
