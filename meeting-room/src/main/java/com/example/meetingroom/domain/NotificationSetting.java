@@ -50,7 +50,7 @@ public class NotificationSetting {
     @Column(name = "enable_reminder", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     @Builder.Default
     private Boolean enableReminder = true;
-
+    
     // ── 시스템 설정 ──
 
     @Column(name = "allow_self_registration", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
@@ -61,6 +61,10 @@ public class NotificationSetting {
     @Builder.Default
     private Boolean maintenanceMode = false;
 
+    @Column(name = "auto_approve", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Builder.Default
+    private Boolean autoApprove = false;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -69,4 +73,5 @@ public class NotificationSetting {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

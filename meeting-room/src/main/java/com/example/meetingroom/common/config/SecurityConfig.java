@@ -26,9 +26,10 @@ public class SecurityConfig {
                     var config = new org.springframework.web.cors.CorsConfiguration();
                     config.setAllowedOrigins(java.util.List.of(
                         "http://localhost:5173",
-                        "https://192.168.1.123.nip.io:5173/",
+                        "https://192.168.1.135.nip.io:5173/",
                         "https://192.168.1.173:5173",
-                        "http://192.168.1.113.nip.io:5173"
+                            "http://192.168.1.135:5173",
+                            "http://192.168.1.113.nip.io:5173"
 
                             ));
                     config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

@@ -77,7 +77,7 @@
               class="flex-1 py-3 text-[14px] font-bold text-indigo-500 hover:bg-indigo-50 transition-colors border-r border-slate-100">
         수정
       </button>
-      <button v-if="canEditOrCancel(activeBooking)"
+      <button v-if="canCancel(activeBooking)"
               @click="confirmCancel(activeBooking); closeAll()"
               class="flex-1 py-3 text-[14px] font-bold text-red-500 hover:bg-red-50 transition-colors">
         취소
@@ -94,7 +94,7 @@ import dayjs from 'dayjs';
 const {
   isMobile, tooltip, detailTarget, popoverStyle,
   getRoomColor, getRoomName, resolveAttendees,
-  canEditOrCancel, openEditModal, confirmCancel,
+  canEditOrCancel, canCancel, openEditModal, confirmCancel,
 } = useApp();
 
 const activeBooking = computed(() =>

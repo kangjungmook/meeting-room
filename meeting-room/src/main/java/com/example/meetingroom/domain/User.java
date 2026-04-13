@@ -64,4 +64,8 @@ public class User {
     /** 가입 거절 사유 */
     @Column(name = "reject_reason", columnDefinition = "TEXT")
     private String rejectReason;
+
+    @Column(name = "tutorial_done", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Builder.Default
+    private Boolean tutorialDone = false;
 }

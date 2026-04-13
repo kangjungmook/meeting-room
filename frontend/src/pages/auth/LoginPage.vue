@@ -17,7 +17,7 @@
               mode === 'login' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600']">
             로그인
           </button>
-          <button @click="mode = 'register'; errorMsg = ''"
+          <button @click="mode = 'register'; errorMsg = ''; registered = false"
             :class="['flex-1 pb-3 text-[14px] font-semibold transition-all border-b-2 -mb-px',
               mode === 'register' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-600']">
             회원가입
@@ -69,8 +69,37 @@
           </button>
         </form>
 
+        <!-- ── 회원가입 완료 안내 ── -->
+        <div v-else-if="mode === 'register' && registered" class="flex flex-col items-center gap-5 py-4 text-center">
+          <div class="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="15" stroke="#10b981" stroke-width="2"/>
+              <path d="M9 16.5l5 5 9-9" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <p class="text-[17px] font-bold text-gray-800">
+              {{ autoApproved ? '회원가입 완료!' : '가입 신청 완료!' }}
+            </p>
+            <p class="text-[13.5px] text-gray-500 leading-relaxed">
+              <template v-if="autoApproved">
+                가입이 완료되었습니다.<br>
+                바로 로그인하실 수 있습니다.
+              </template>
+              <template v-else>
+                가입 요청이 접수되었습니다.<br>
+                관리자 승인 후 로그인이 가능합니다.
+              </template>
+            </p>
+          </div>
+          <button @click="registered = false; mode = 'login'"
+            class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[15px] font-semibold transition-all shadow-sm">
+            로그인 화면으로
+          </button>
+        </div>
+
         <!-- ── 회원가입 폼 ── -->
-        <form v-else @submit.prevent="submitRegister" class="flex flex-col gap-4">
+        <form v-else-if="mode === 'register'" @submit.prevent="submitRegister" class="flex flex-col gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-[13px] font-medium text-gray-600">사번</label>
             <input v-model="form.employeeId" type="text" placeholder="사번을 입력하세요" required
@@ -117,10 +146,6 @@
             <AppIcon name="alert-circle" :size="15" cls="flex-shrink-0 mt-px text-red-400" />
             <span class="text-[13px] text-red-500 leading-snug">{{ errorMsg }}</span>
           </div>
-          <div v-if="successMsg" class="flex items-start gap-2.5 px-4 py-3 bg-emerald-50 rounded-xl">
-            <AppIcon name="check" :size="15" cls="flex-shrink-0 mt-px text-emerald-400" />
-            <span class="text-[13px] text-emerald-600 leading-snug">{{ successMsg }}</span>
-          </div>
 
           <button type="submit"
             class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white text-[15px] font-semibold transition-all shadow-sm mt-1">
@@ -157,7 +182,8 @@ const enterKioskMode = () => {
 const mode = ref('login');
 const showPw = ref(false);
 const errorMsg = ref('');
-const successMsg = ref('');
+const registered = ref(false);
+const autoApproved = ref(false);
 const rejectedReason = ref(null);
 
 // ── 아이디 저장 ────────────────────────────────────────────────
@@ -185,7 +211,6 @@ const resetForm = () => {
   form.confirmPassword = '';
   form.name = '';
   errorMsg.value = '';
-  successMsg.value = '';
 };
 
 // ── 로그인 ─────────────────────────────────────────────────
@@ -219,6 +244,7 @@ const submitLogin = async () => {
     const b64 = res.data.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
     const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     const payload = JSON.parse(new TextDecoder().decode(bytes));
+
     router.push(payload.role === 'ADMIN' ? '/admin' : '/main');
   } catch (e) {
     const data = e.response?.data;
@@ -233,20 +259,19 @@ const submitLogin = async () => {
 // ── 회원가입 ───────────────────────────────────────────────
 const submitRegister = async () => {
   errorMsg.value = '';
-  successMsg.value = '';
   if (form.password !== form.confirmPassword) {
     errorMsg.value = '비밀번호가 일치하지 않습니다.';
     return;
   }
   try {
-    await api.post('/auth/register', {
+    const res = await api.post('/auth/register', {
       employeeId: form.employeeId,
       password: form.password,
       name: form.name,
     });
-    successMsg.value = '회원가입 완료! 관리자 승인을 기다려주세요.';
+    autoApproved.value = res.data?.autoApproved === true;
     resetForm();
-    mode.value = 'login';
+    registered.value = true;
   } catch (e) {
     const data = e.response?.data;
     errorMsg.value = (typeof data === 'object' ? data?.message : data) || '회원가입에 실패했습니다.';

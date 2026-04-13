@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue';
 import api from '../../api';
 import { notifSetting, fetchAll } from './useAdminState';
+import { showAdminToast } from './useAdminToast';
 
 export const broadcast = ref({ title: '', body: '' });
 
@@ -25,10 +26,10 @@ export const removeMinute = (idx) => {
   notifSetting.value.minutesBefore = parts.join(',');
 };
 
-export const saveNotifSetting  = async () => { await api.put('/admin/notification-setting', notifSetting.value); alert('저장되었습니다.'); };
-export const saveSystemSetting = async () => { await api.put('/admin/notification-setting', notifSetting.value); alert('시스템 설정이 저장되었습니다.'); };
+export const saveNotifSetting  = async () => { await api.put('/admin/notification-setting', notifSetting.value); showAdminToast('저장되었습니다.'); };
+export const saveSystemSetting = async () => { await api.put('/admin/notification-setting', notifSetting.value); showAdminToast('시스템 설정이 저장되었습니다.'); };
 export const sendBroadcast = async () => {
   await api.post('/admin/notification/broadcast', broadcast.value);
   broadcast.value = { title: '', body: '' };
-  alert('전송되었습니다.');
+  showAdminToast('전송되었습니다.');
 };

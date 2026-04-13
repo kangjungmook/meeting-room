@@ -53,8 +53,8 @@
               <th class="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider w-32">액션</th>
               <th class="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">설명</th>
               <th class="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider w-36">IP</th>
-              <th class="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider w-20">디바이스</th>
-              <th class="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider w-28">브라우저</th>
+              <th class="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider w-24 whitespace-nowrap">디바이스</th>
+              <th class="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider w-28 whitespace-nowrap">브라우저</th>
             </tr>
           </thead>
           <tbody>
@@ -91,8 +91,8 @@
                   </div>
                 </td>
                 <td class="px-5 py-3.5 font-mono text-[12px] text-slate-500">{{ log.ip || '-' }}</td>
-                <td class="px-5 py-3.5 text-[12px] text-slate-500">{{ parseDevice(log.userAgent) }}</td>
-                <td class="px-5 py-3.5 text-[12px] text-slate-500">{{ parseBrowser(log.userAgent) }}</td>
+                <td class="px-5 py-3.5 text-[12px] text-slate-500 whitespace-nowrap">{{ parseDevice(log.userAgent) }}</td>
+                <td class="px-5 py-3.5 text-[12px] text-slate-500 whitespace-nowrap">{{ parseBrowser(log.userAgent) }}</td>
               </tr>
               <!-- detail 확장 행 -->
               <tr v-if="expandedId === log.id" class="border-b border-slate-100">

@@ -1,8 +1,10 @@
 package com.example.meetingroom.service;
 
 import com.example.meetingroom.common.config.JwtUtil;
+import com.example.meetingroom.domain.NotificationSetting;
 import com.example.meetingroom.domain.User;
 import com.example.meetingroom.dto.UserRequestDto;
+import com.example.meetingroom.repository.NotificationSettingRepository;
 import com.example.meetingroom.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +24,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final SseService sseService;
     private final AdminLogService adminLogService;
+    private final NotificationSettingRepository notificationSettingRepository;
 
     private void validatePassword(String password) {
         if (password == null || password.length() < 6) {
@@ -46,10 +49,16 @@ public class AuthService {
             throw new IllegalArgumentException("이미 존재하는 사번입니다.");
         }
         validatePassword(dto.getPassword());
+
+        boolean autoApprove = notificationSettingRepository.findById(1L)
+                .map(s -> Boolean.TRUE.equals(s.getAutoApprove()))
+                .orElse(false);
+
         User user = User.builder()
                 .employeeId(dto.getEmployeeId())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .name(dto.getName())
+                .status(autoApprove ? "APPROVED" : "PENDING")
                 .build();
         userRepository.save(user);
         sseService.broadcast("ADMIN", Map.of("action", "USER_REGISTER"));

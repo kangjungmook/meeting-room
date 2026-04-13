@@ -41,6 +41,7 @@ export const notifSetting = ref({
   enableReminder: true,
   allowSelfRegistration: true,
   maintenanceMode: false,
+  autoApprove: false,
 });
 
 // ── 전체 데이터 로드 ──────────────────────────────────────────

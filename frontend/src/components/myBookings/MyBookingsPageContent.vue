@@ -14,7 +14,7 @@
               <AppIcon name="user" :size="14" class="text-blue-600 dark:text-blue-400" />
             </div>
             <div class="leading-tight min-w-0">
-              <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 truncate">내 예약</p>
+              <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 truncate">내 회의</p>
               <p class="text-[10.5px] text-gray-400 dark:text-gray-500">{{ myBookings.length }}건 관리</p>
             </div>
           </div>

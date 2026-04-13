@@ -85,7 +85,7 @@ import {
 } from './app/useBookingData';
 import {
   getRoomColor, getRoomName, resolveAttendees, filterBookings, getBookingsForDate,
-  sortBookings, canEditOrCancel, chipMinutes, todayBookingCount, isRoomInUse,
+  sortBookings, canEditOrCancel, canCancel, chipMinutes, todayBookingCount, isRoomInUse,
   currentlyUsedCount, selectedRoom, selectedRoomBookings, selectedRoomCurrent,
   getRoomBookingStatus, getLayoutBookings, getAllLayoutBookings, calcPos, HOUR_H,
   calcPosV, nowLineTop, dayViewRef, scrollDayView as _scrollDayView,
@@ -137,7 +137,7 @@ export function useApp() {
     // 룸 / 예약 헬퍼
     getRoomColor, getRoomName, resolveAttendees,
     filterBookings, getBookingsForDate, sortBookings,
-    canEditOrCancel, chipMinutes,
+    canEditOrCancel, canCancel, chipMinutes,
     // 오늘 현황
     todayBookingCount, currentlyUsedCount, isRoomInUse,
     // 회의실 상세

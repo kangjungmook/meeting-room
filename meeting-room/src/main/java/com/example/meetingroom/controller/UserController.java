@@ -102,6 +102,29 @@ public class UserController {
         return ResponseEntity.ok(notifPrefRepository.save(pref));
     }
 
+    /** 튜토리얼 완료 표시 */
+    @PatchMapping("/tutorial-done")
+    public ResponseEntity<?> markTutorialDone(HttpServletRequest request) {
+        Long userId = resolveUserId(request);
+        if (userId == null) return ResponseEntity.status(401).build();
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setTutorialDone(true);
+            userRepository.save(user);
+        });
+        return ResponseEntity.ok().build();
+    }
+
+    /** 튜토리얼 완료 여부 조회 */
+    @GetMapping("/tutorial-done")
+    public ResponseEntity<?> getTutorialDone(HttpServletRequest request) {
+        Long userId = resolveUserId(request);
+        if (userId == null) return ResponseEntity.status(401).build();
+        boolean done = userRepository.findById(userId)
+                .map(u -> Boolean.TRUE.equals(u.getTutorialDone()))
+                .orElse(false);
+        return ResponseEntity.ok(Map.of("done", done));
+    }
+
     private Long resolveUserId(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) return null;

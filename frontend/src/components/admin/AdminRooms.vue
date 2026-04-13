@@ -65,6 +65,7 @@
 <script setup>
 import { reactive } from 'vue';
 import { useAdmin } from '../../composables/useAdmin';
+import { showAdminToast } from '../../composables/admin/useAdminToast';
 import AdminRoomsTable from './rooms/AdminRoomsTable.vue';
 import AdminRoomsCards from './rooms/AdminRoomsCards.vue';
 import ToggleSwitch from '../ui/ToggleSwitch.vue';
@@ -93,7 +94,7 @@ const submitModal = async () => {
     if (modal.isEdit) await updateRoom(modal.form.id, modal.form);
     else await createRoom(modal.form);
     modal.show = false;
-  } catch { alert('오류가 발생했습니다.'); }
+  } catch { showAdminToast('오류가 발생했습니다.', 'error'); }
 };
 
 defineExpose({ openModal });

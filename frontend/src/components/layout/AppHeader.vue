@@ -125,12 +125,6 @@
 
     <!-- 우측 아이콘 -->
     <div class="flex items-center gap-0 flex-shrink-0">
-      <div class="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center ring-1 ring-blue-100 dark:ring-blue-900/30">
-        <svg width="11" height="11" viewBox="0 0 15 15" fill="none">
-          <circle cx="7.5" cy="5" r="3" stroke="#2563eb" stroke-width="1.5"/>
-          <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </div>
       <button @click="requestNotifPermission"
               :class="[
                 'w-6 h-6 flex items-center justify-center rounded-lg transition-colors',

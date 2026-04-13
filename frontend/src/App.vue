@@ -88,6 +88,9 @@
     <!-- ── 토스트 알림 ── -->
     <ToastContainer />
 
+    <!-- ── 튜토리얼 (최초 1회) ── -->
+    <TutorialModal />
+
   </div>
 </template>
 
@@ -108,6 +111,7 @@ import RoomDetailModal   from './components/booking/RoomDetailModal.vue';
 import CancelModal       from './components/booking/CancelModal.vue';
 import UserSettingsModal from './components/layout/UserSettingsModal.vue';
 import ToastContainer    from './components/layout/ToastContainer.vue';
+import TutorialModal     from './components/layout/TutorialModal.vue';
 import CalendarDay       from './components/calendar/CalendarDay.vue';
 import CalendarWeek      from './components/calendar/CalendarWeek.vue';
 import CalendarMonth     from './components/calendar/CalendarMonth.vue';

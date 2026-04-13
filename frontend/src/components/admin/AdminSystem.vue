@@ -32,6 +32,28 @@
       </div>
     </div>
 
+    <!-- 회원가입 자동 승인 -->
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div class="px-6 py-5 border-b border-slate-100">
+        <h2 class="text-[16px] font-bold text-slate-800">회원가입 자동 승인</h2>
+        <p class="text-[13px] text-slate-600 mt-1">ON 시 가입 즉시 승인, OFF 시 관리자가 직접 승인해야 합니다.</p>
+      </div>
+      <div class="px-6 py-5 flex items-center justify-between gap-4">
+        <div>
+          <p class="text-[14px] font-semibold text-slate-700">자동 승인</p>
+          <p class="text-[13px] mt-0.5" :class="notifSetting.autoApprove ? 'text-green-600 font-semibold' : 'text-slate-600'">
+            {{ notifSetting.autoApprove ? '✅ 가입 즉시 자동으로 승인됩니다.' : '관리자가 대기 목록에서 직접 승인해야 합니다.' }}
+          </p>
+        </div>
+        <button type="button" @click="notifSetting.autoApprove = !notifSetting.autoApprove"
+          :class="['relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none',
+            notifSetting.autoApprove ? 'bg-green-500' : 'bg-slate-300']">
+          <span :class="['absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300',
+            notifSetting.autoApprove ? 'left-[26px]' : 'left-0.5']"></span>
+        </button>
+      </div>
+    </div>
+
     <!-- 점검 모드 -->
     <div :class="['rounded-2xl border overflow-hidden transition-all',
       notifSetting.maintenanceMode ? 'bg-red-50/60 border-red-200' : 'bg-white border-slate-200']">

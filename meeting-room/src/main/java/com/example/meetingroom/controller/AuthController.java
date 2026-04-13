@@ -25,8 +25,9 @@ public class AuthController {
             return ResponseEntity.status(403).body(Map.of("message", "현재 가입이 제한되어 있습니다. 관리자에게 문의하세요."));
         }
         try {
+            boolean autoApproved = setting != null && Boolean.TRUE.equals(setting.getAutoApprove());
             authService.register(dto);
-            return ResponseEntity.ok("회원가입 완료. 관리자 승인을 기다려주세요.");
+            return ResponseEntity.ok(Map.of("autoApproved", autoApproved));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
