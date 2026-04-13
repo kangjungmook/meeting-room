@@ -50,7 +50,7 @@ public class NotificationSetting {
     @Column(name = "enable_reminder", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     @Builder.Default
     private Boolean enableReminder = true;
-    
+
     // ── 시스템 설정 ──
 
     @Column(name = "allow_self_registration", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
