@@ -1,0 +1,66 @@
+import { ref, computed } from 'vue';
+import dayjs from 'dayjs';
+import api from '../../api';
+import { viewMode, targetDate } from './useCalendar';
+import { liveNow } from './useRealtime';
+
+// ── 핵심 데이터 ───────────────────────────────────────────────
+export const rooms    = ref([]);
+export const bookings = ref([]);
+export const userMap  = ref({}); // userId(Long) → name (참석자 표시용)
+
+export const isLoadingBookings   = ref(false);
+export const isLoadingMyBookings = ref(false);
+
+// ── 내 예약 ───────────────────────────────────────────────────
+export const myBookings         = ref([]);
+export const myBookingsToday    = computed(() => myBookings.value.filter(b =>
+  dayjs(b.startTime).isSame(liveNow.value, 'day') && !dayjs(b.endTime).isBefore(liveNow.value)
+));
+export const myBookingsThisWeek = computed(() => myBookings.value.filter(b => {
+  const d = dayjs(b.startTime);
+  return !d.isSame(liveNow.value, 'day') && d.isSame(liveNow.value, 'week') && !dayjs(b.endTime).isBefore(liveNow.value);
+}));
+export const myBookingsUpcoming = computed(() => myBookings.value.filter(b => dayjs(b.startTime).isAfter(liveNow.value.endOf('week'))));
+export const myBookingsPast     = computed(() => myBookings.value.filter(b => dayjs(b.endTime).isBefore(liveNow.value)));
+
+export const fetchRooms = async () => {
+  try {
+    const res = await api.get('/rooms');
+    rooms.value = res.data
+      .filter(r => r.isActive)
+      .map(r => ({ id: r.id, name: r.name, capacity: r.capacity, colorCode: r.colorCode }));
+  } catch { /* ignore */ }
+};
+
+let _fetchController = null;
+
+export const fetchBookings = async () => {
+  if (_fetchController) _fetchController.abort();
+  _fetchController = new AbortController();
+
+  isLoadingBookings.value = true;
+  const unit  = viewMode.value === 'month' ? 'month' : viewMode.value === 'week' ? 'week' : 'day';
+  const start = targetDate.value.startOf(unit).format('YYYY-MM-DD');
+  const end   = targetDate.value.endOf(unit).format('YYYY-MM-DD');
+  try {
+    const res = await api.get(`/bookings?startDate=${start}&endDate=${end}`, {
+      signal: _fetchController.signal,
+    });
+    bookings.value = res.data;
+  } catch (e) {
+    if (e.code !== 'ERR_CANCELED') { /* ignore */ }
+  } finally {
+    isLoadingBookings.value = false;
+  }
+};
+
+export const fetchMyBookings = async () => {
+  isLoadingMyBookings.value = true;
+  try {
+    const res = await api.get('/bookings/my');
+    myBookings.value = res.data;
+  } catch { /* ignore */ } finally {
+    isLoadingMyBookings.value = false;
+  }
+};

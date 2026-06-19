@@ -1,0 +1,518 @@
+<template>
+  <div class="flex h-screen bg-[#F5F7FA] dark:bg-gray-950 font-sans text-gray-900 dark:text-gray-50 overflow-hidden">
+    <AppSidebar v-if="!isMobile" />
+
+    <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+      <header class="h-[56px] flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-stretch px-4 relative">
+        <div class="flex items-center gap-3 flex-shrink-0 min-w-0">
+          <button v-if="isMobile" @click="showDrawer = true"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors">
+            <AppIcon name="menu" :size="17" />
+          </button>
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+              <AppIcon name="user" :size="14" class="text-blue-600 dark:text-blue-400" />
+            </div>
+            <div class="leading-tight min-w-0">
+              <p class="text-[13px] font-bold text-gray-800 dark:text-gray-100 truncate">내 회의</p>
+              <p class="text-[10.5px] text-gray-400 dark:text-gray-500">{{ myBookings.length }}건 관리</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 flex items-center gap-1.5 overflow-x-auto">
+        <button v-for="stat in stats" :key="stat.key"
+             @click="activeFilter = stat.key"
+             class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold flex-shrink-0 whitespace-nowrap transition-colors"
+             :class="activeFilter === stat.key
+               ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'
+               : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'">
+          <span class="tabular-nums font-black"
+                :style="activeFilter === stat.key ? { color: stat.color } : {}">{{ stat.count }}</span>
+          <span>{{ stat.label }}</span>
+        </button>
+      </div>
+
+      <div class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-2.5 flex items-center gap-2.5 flex-wrap">
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl min-w-[140px] flex-1 max-w-[260px]">
+          <AppIcon name="search" :size="12" cls="text-gray-400 flex-shrink-0" />
+          <input v-model="searchQuery" type="text" placeholder="제목 검색..."
+            class="bg-transparent text-[13px] outline-none w-full text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-600" />
+          <button v-if="searchQuery" @click="searchQuery = ''"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
+            <AppIcon name="close" :size="10" />
+          </button>
+        </div>
+
+        <select v-model="filterRoom"
+          class="text-[13px] px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none text-gray-600 dark:text-gray-300 cursor-pointer">
+          <option value="">전체 회의실</option>
+          <option v-for="r in uniqueRooms" :key="r.id" :value="r.id">{{ r.name }}</option>
+        </select>
+
+        <div class="flex gap-1">
+          <button v-for="opt in roleOpts" :key="opt.value"
+            @click="filterRole = filterRole === opt.value ? '' : opt.value"
+            :class="filterRole === opt.value
+              ? 'bg-indigo-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'"
+            class="text-[12px] font-semibold px-3 py-1.5 rounded-xl transition-colors">
+            {{ opt.label }}
+          </button>
+        </div>
+
+        <button v-if="hasFilter" @click="searchQuery = ''; filterRoom = ''; filterRole = ''"
+          class="ml-auto flex items-center gap-1 text-[12px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+          <AppIcon name="close" :size="10" />
+          초기화
+        </button>
+        <button @click="toggleSelectionMode"
+          :class="selectionMode
+            ? 'bg-indigo-500 text-white hover:bg-indigo-600'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-colors">
+          <AppIcon name="check" :size="12" />
+          {{ selectionMode ? '선택 취소' : '선택' }}
+        </button>
+        <button @click="refresh" :disabled="refreshing"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-[12px] font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-40">
+          <AppIcon name="refresh" :size="12" :spin="refreshing" />
+          새로고침
+        </button>
+      </div>
+
+      <!-- 상세 모달 -->
+      <transition name="modal">
+        <div v-if="detailBooking"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4"
+             @click.self="detailBooking = null">
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="detailBooking = null"></div>
+          <div class="relative w-full max-w-[420px] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-3 h-3 rounded-full flex-shrink-0" :style="{ background: getRoomColor(detailBooking.roomId) }"></span>
+                <p class="text-[15px] font-bold text-gray-800 dark:text-gray-100 truncate">{{ detailBooking.title }}</p>
+              </div>
+              <button @click="detailBooking = null"
+                      class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0 ml-2">
+                <AppIcon name="close" :size="14" />
+              </button>
+            </div>
+
+            <div class="overflow-y-auto px-5 py-5 flex flex-col gap-5 custom-scrollbar">
+              <div class="grid grid-cols-2 gap-3">
+                <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <AppIcon name="calendar" :size="14" cls="text-gray-400 flex-shrink-0" />
+                  <div class="min-w-0">
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500">회의실</p>
+                    <p class="text-[12.5px] font-bold text-gray-800 dark:text-gray-100 truncate">{{ getRoomName(detailBooking.roomId) }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <AppIcon name="clock" :size="14" cls="text-gray-400 flex-shrink-0" />
+                  <div class="min-w-0">
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500">시간</p>
+                    <p class="text-[12.5px] font-bold text-gray-800 dark:text-gray-100 tabular-nums">
+                      {{ dayjs(detailBooking.startTime).format('HH:mm') }} – {{ dayjs(detailBooking.endTime).format('HH:mm') }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <AppIcon name="calendar" :size="13" cls="text-gray-400 flex-shrink-0" />
+                <p class="text-[12.5px] font-semibold text-gray-700 dark:text-gray-300 tabular-nums">
+                  {{ dayjs(detailBooking.startTime).format('YYYY년 MM월 DD일 (dd)') }}
+                </p>
+              </div>
+
+              <div>
+                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">예약자</p>
+                <div class="flex items-center gap-2.5 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                  <div class="w-7 h-7 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center flex-shrink-0">
+                    <svg width="11" height="11" viewBox="0 0 15 15" fill="none">
+                      <circle cx="7.5" cy="5" r="3" stroke="#3b82f6" stroke-width="1.5"/>
+                      <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <p class="text-[13px] font-semibold text-blue-700 dark:text-blue-300">{{ detailBooking.organizer }}</p>
+                </div>
+              </div>
+
+              <div v-if="detailBooking.attendeeIds?.length || detailBooking.externalAttendeeNames?.length">
+                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                  참석자 <span class="text-gray-300 dark:text-gray-600 font-normal normal-case">{{ (detailBooking.attendeeIds?.length || 0) + (detailBooking.externalAttendeeNames?.length || 0) }}명</span>
+                </p>
+                <div class="flex flex-col gap-1.5">
+                  <div v-for="id in (detailBooking.attendeeIds || [])" :key="id"
+                       class="flex items-center gap-2.5 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <div class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+                      <svg width="10" height="10" viewBox="0 0 15 15" fill="none">
+                        <circle cx="7.5" cy="5" r="3" stroke="#6366f1" stroke-width="1.5"/>
+                        <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <p class="text-[12.5px] font-medium text-gray-700 dark:text-gray-300">{{ resolveAttendees([id]) }}</p>
+                  </div>
+                  <div v-for="name in (detailBooking.externalAttendeeNames || [])" :key="name"
+                       class="flex items-center gap-2.5 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <div class="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+                      <svg width="10" height="10" viewBox="0 0 15 15" fill="none">
+                        <circle cx="7.5" cy="5" r="3" stroke="#f59e0b" stroke-width="1.5"/>
+                        <path d="M1.5 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <p class="text-[12.5px] font-medium text-gray-700 dark:text-gray-300">{{ name }}</p>
+                    <span class="ml-auto text-[10px] text-amber-500 font-semibold bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded-full">미가입</span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="detailBooking.description">
+                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">메모</p>
+                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <p class="text-[13px] text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ detailBooking.description }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="canEditOrCancel(detailBooking) || canCancel(detailBooking)" class="px-5 py-4 border-t border-gray-100 dark:border-gray-800 flex gap-2 flex-shrink-0">
+              <button v-if="canEditOrCancel(detailBooking)" @click="openEditModal(detailBooking); detailBooking = null; router.push('/main')"
+                      class="flex-1 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[13px] font-bold transition-colors">
+                수정
+              </button>
+              <button v-if="canCancel(detailBooking)" @click="confirmCancel(detailBooking); detailBooking = null"
+                      class="flex-1 py-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 text-red-500 text-[13px] font-bold transition-colors">
+                예약 취소
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <main class="flex-1 overflow-y-auto custom-scrollbar" style="padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px))">
+        <div v-if="isLoadingMyBookings && myBookings.length === 0" class="px-4 py-4">
+          <SkeletonBookingList :count="4" />
+        </div>
+
+        <div v-else-if="myBookings.length === 0"
+             class="flex flex-col items-center justify-center h-full gap-4">
+          <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <svg width="26" height="26" viewBox="0 0 18 18" fill="none">
+              <rect x="1.5" y="3.5" width="15" height="13" rx="2" stroke="#cbd5e1" stroke-width="1.6"/>
+              <path d="M5.5 1.5v4M12.5 1.5v4M1.5 8h15" stroke="#cbd5e1" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="text-[14px] font-semibold text-gray-400 dark:text-gray-500">예약이 없습니다</p>
+        </div>
+
+        <template v-for="section in sections" :key="section.label">
+          <template v-if="section.list.length > 0">
+            <div class="sticky top-0 z-10 bg-[#F5F7FA] dark:bg-gray-950 px-4 py-2.5 flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :style="{ background: section.color }"></span>
+              <p class="text-[11px] font-bold uppercase tracking-widest" :style="{ color: section.color }">{{ section.label }}</p>
+              <span class="text-[10.5px] font-bold text-white px-1.5 py-0.5 rounded-full" :style="{ background: section.color }">{{ section.list.length }}</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-600 font-medium ml-1">{{ section.dateRange }}</span>
+            </div>
+
+            <div class="px-4 pb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div v-for="b in section.list" :key="b.id"
+                   class="bg-white dark:bg-gray-900 rounded-xl border overflow-hidden cursor-pointer hover:shadow-sm transition-all"
+                   :class="[
+                     section.past ? 'opacity-55' : '',
+                     selectionMode && selectedIds.includes(b.id)
+                       ? 'border-indigo-400 dark:border-indigo-500 ring-2 ring-indigo-200 dark:ring-indigo-900/40'
+                       : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'
+                   ]"
+                   @click="onCardClick(b)">
+                <div class="flex items-start gap-2.5 px-3 py-2.5">
+                  <div v-if="selectionMode && canCancel(b)" class="flex-shrink-0 mt-0.5">
+                    <span class="w-4 h-4 flex items-center justify-center rounded-md border-2 transition-colors"
+                          :class="selectedIds.includes(b.id)
+                            ? 'bg-indigo-500 border-indigo-500'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'">
+                      <AppIcon v-if="selectedIds.includes(b.id)" name="check" :size="10" cls="text-white" />
+                    </span>
+                  </div>
+                  <div v-else-if="selectionMode" class="w-4 flex-shrink-0"></div>
+                  <div class="w-0.5 self-stretch rounded-full flex-shrink-0 mt-0.5" :style="{ background: getRoomColor(b.roomId) }"></div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1 mb-1">
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white truncate"
+                            :style="{ background: getRoomColor(b.roomId) }">
+                        {{ getRoomName(b.roomId) }}
+                      </span>
+                      <span v-if="!section.past"
+                            :class="b.userId === currentUser.id
+                              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                              : 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'"
+                            class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0">
+                        {{ b.userId === currentUser.id ? '예약자' : '참석자' }}
+                      </span>
+                      <span v-else class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 flex-shrink-0">완료</span>
+                    </div>
+
+                    <p class="text-[13px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">{{ b.title }}</p>
+
+                    <div class="flex items-center justify-between mt-1 gap-1">
+                      <p class="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums truncate">{{ section.fmt(b) }}</p>
+                      <div v-if="!selectionMode && (canEditOrCancel(b) || canCancel(b))" class="flex gap-1 flex-shrink-0">
+                        <button v-if="canEditOrCancel(b)" @click.stop="openEditModal(b); router.push('/main')"
+                                class="w-6 h-6 flex items-center justify-center rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-500 hover:bg-blue-100 transition-colors">
+                          <AppIcon name="edit" :size="10" />
+                        </button>
+                        <button v-if="canCancel(b)" @click.stop="confirmCancel(b)"
+                                class="w-6 h-6 flex items-center justify-center rounded-md bg-red-50 dark:bg-red-900/30 text-red-400 hover:bg-red-100 transition-colors">
+                          <AppIcon name="trash" :size="10" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </template>
+      </main>
+    </div>
+
+    <!-- 선택 모드: 하단 액션 바 (모바일: 화면 폭 꽉 채움 / 데스크톱: 중앙 플로팅) -->
+    <transition name="fade">
+      <div v-if="selectionMode"
+           class="fixed z-40 bg-white dark:bg-gray-900 shadow-xl border-gray-200 dark:border-gray-700
+                  left-0 right-0 bottom-0 border-t px-3 py-2.5
+                  sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:bottom-4 sm:rounded-2xl sm:border sm:px-4"
+           style="padding-bottom: calc(0.625rem + env(safe-area-inset-bottom, 0px))">
+        <div class="flex items-center gap-1.5 sm:gap-2 w-full whitespace-nowrap">
+          <span class="text-[11px] sm:text-[12px] font-semibold text-gray-500 dark:text-gray-400 px-0.5 flex-shrink-0">
+            <span class="text-indigo-500 font-black tabular-nums">{{ selectedIds.length }}</span>건
+          </span>
+          <button @click="selectAllCancelable"
+                  class="flex-1 sm:flex-initial text-[11px] sm:text-[12px] font-semibold px-2 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            전체
+          </button>
+          <button @click="selectedIds = []" :disabled="!selectedIds.length"
+                  class="flex-1 sm:flex-initial text-[11px] sm:text-[12px] font-semibold px-2 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-40">
+            해제
+          </button>
+          <button @click="showBulkConfirm = true" :disabled="!selectedIds.length || bulkDeleting"
+                  class="flex-1 sm:flex-initial flex items-center justify-center gap-1 text-[11px] sm:text-[12px] font-bold px-2 sm:px-3 py-1.5 rounded-xl bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            <AppIcon name="trash" :size="11" />
+            삭제
+          </button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 선택 삭제 확인 모달 -->
+    <div v-if="showBulkConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div class="bg-white dark:bg-gray-900 w-full max-w-sm rounded-2xl shadow-xl border border-slate-200 dark:border-gray-700 overflow-hidden">
+        <div class="px-7 pt-7 pb-5">
+          <div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
+            <AppIcon name="trash" :size="18" cls="text-red-500" />
+          </div>
+          <h3 class="text-[17px] font-bold text-slate-800 dark:text-gray-100">선택한 예약을 삭제할까요?</h3>
+          <p class="text-[14px] text-slate-400 dark:text-gray-500 mt-1.5">
+            선택한 <span class="font-bold text-slate-600 dark:text-gray-300">{{ selectedIds.length }}건</span>의 예약이 삭제됩니다.
+          </p>
+          <div v-if="bulkError" class="mt-4 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/40 rounded-xl">
+            <span class="text-[12px] font-semibold text-red-500">{{ bulkError }}</span>
+          </div>
+        </div>
+        <div class="flex gap-3 px-7 pb-7">
+          <button @click="showBulkConfirm = false; bulkError = ''" :disabled="bulkDeleting"
+                  class="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-gray-800 hover:bg-slate-200 dark:hover:bg-gray-700 text-slate-500 dark:text-gray-300 text-[14px] font-bold transition-all disabled:opacity-50">
+            돌아가기
+          </button>
+          <button @click="doBulkDelete" :disabled="bulkDeleting"
+                  class="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[14px] font-bold transition-all">
+            {{ bulkDeleting ? '삭제 중...' : '삭제' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <CancelModal />
+    <MobileDrawer />
+    <ToastContainer />
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import dayjs from 'dayjs';
+import { useApp } from '../../composables/useApp';
+import AppIcon from '../icons/AppIcon.vue';
+import AppSidebar from '../layout/AppSidebar.vue';
+import CancelModal from '../booking/CancelModal.vue';
+import MobileDrawer from '../layout/MobileDrawer.vue';
+import ToastContainer from '../layout/ToastContainer.vue';
+import SkeletonBookingList from '../calendar/SkeletonBookingList.vue';
+import api from '../../api';
+
+defineProps({
+  isMobile: { type: Boolean, required: true },
+});
+
+const router = useRouter();
+
+const {
+  showDrawer,
+  myBookings, myBookingsToday, myBookingsThisWeek, myBookingsUpcoming, myBookingsPast,
+  getRoomColor, getRoomName, resolveAttendees, canEditOrCancel, canCancel,
+  openEditModal, confirmCancel, currentUser,
+  fetchMyBookings, fetchRooms,
+  connectSse, disconnectSse, applyNotifPrefs,
+  isLoadingMyBookings, userMap,
+} = useApp();
+
+const detailBooking = ref(null);
+const refreshing = ref(false);
+const activeFilter = ref('all');
+
+// ── 선택 모드 / 일괄 삭제 ──────────────────────────────────────
+const selectionMode = ref(false);
+const selectedIds = ref([]);
+const showBulkConfirm = ref(false);
+const bulkDeleting = ref(false);
+const bulkError = ref('');
+
+const toggleSelectionMode = () => {
+  selectionMode.value = !selectionMode.value;
+  selectedIds.value = [];
+  bulkError.value = '';
+  if (selectionMode.value) detailBooking.value = null;
+};
+
+const toggleSelect = (b) => {
+  if (!canCancel(b)) return;
+  const idx = selectedIds.value.indexOf(b.id);
+  if (idx >= 0) selectedIds.value.splice(idx, 1);
+  else selectedIds.value.push(b.id);
+};
+
+const onCardClick = (b) => {
+  if (selectionMode.value) {
+    toggleSelect(b);
+    return;
+  }
+  detailBooking.value = detailBooking.value?.id === b.id ? null : b;
+};
+
+const selectAllCancelable = () => {
+  const ids = [];
+  for (const s of allSections.value) {
+    for (const b of s.list) if (canCancel(b)) ids.push(b.id);
+  }
+  selectedIds.value = ids;
+};
+
+const doBulkDelete = async () => {
+  if (bulkDeleting.value || !selectedIds.value.length) return;
+  bulkDeleting.value = true;
+  bulkError.value = '';
+  // 병렬 삭제 — 기존 순차 호출 대비 대폭 단축
+  const results = await Promise.allSettled(
+    selectedIds.value.map(id => api.patch(`/bookings/${id}`).then(() => id).catch(() => { throw id; }))
+  );
+  const failed = results.filter(r => r.status === 'rejected').map(r => r.reason);
+  await fetchMyBookings();
+  bulkDeleting.value = false;
+  if (failed.length) {
+    selectedIds.value = failed;
+    bulkError.value = `${failed.length}건 삭제에 실패했습니다.`;
+    return;
+  }
+  selectedIds.value = [];
+  showBulkConfirm.value = false;
+  selectionMode.value = false;
+};
+
+const searchQuery = ref('');
+const filterRoom = ref('');
+const filterRole = ref('');
+const roleOpts = [
+  { value: 'organizer', label: '예약자' },
+  { value: 'attendee', label: '참석자' },
+];
+
+const hasFilter = computed(() => !!(searchQuery.value || filterRoom.value || filterRole.value));
+
+const uniqueRooms = computed(() => {
+  const seen = new Set();
+  return myBookings.value
+    .filter(b => { if (seen.has(b.roomId)) return false; seen.add(b.roomId); return true; })
+    .map(b => ({ id: b.roomId, name: getRoomName(b.roomId) }));
+});
+
+const applyFilter = (list) => list.filter(b => {
+  if (searchQuery.value && !b.title.toLowerCase().includes(searchQuery.value.toLowerCase())) return false;
+  if (filterRoom.value && b.roomId !== filterRoom.value) return false;
+  if (filterRole.value === 'organizer' && b.userId !== currentUser.id) return false;
+  if (filterRole.value === 'attendee' && b.userId === currentUser.id) return false;
+  return true;
+});
+
+const refresh = async () => {
+  refreshing.value = true;
+  await fetchMyBookings();
+  refreshing.value = false;
+};
+
+onMounted(async () => {
+  await fetchRooms();
+  await fetchMyBookings();
+  connectSse();
+  api.get('/users').then(res => {
+    const map = {};
+    res.data.forEach(u => { map[u.id] = u.name; });
+    userMap.value = map;
+  }).catch(() => {});
+  api.get('/users/notification-preference').then(res => applyNotifPrefs(res.data)).catch(() => {});
+});
+
+onUnmounted(() => { disconnectSse(); });
+
+const fmtRange = b => `${dayjs(b.startTime).format('MM/DD (dd) HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`;
+const fmtToday = b => `${dayjs(b.startTime).format('HH:mm')} – ${dayjs(b.endTime).format('HH:mm')}`;
+
+const allSections = computed(() => [
+  { key: 'today', label: '오늘 회의', color: '#3b82f6', list: applyFilter(myBookingsToday.value), fmt: fmtToday, past: false,
+    dateRange: dayjs().format('M/D (ddd)') },
+  { key: 'week', label: '이번 주', color: '#8b5cf6', list: applyFilter(myBookingsThisWeek.value), fmt: fmtRange, past: false,
+    dateRange: `${dayjs().startOf('week').format('M/D')} – ${dayjs().endOf('week').format('M/D')}` },
+  { key: 'later', label: '이후 일정', color: '#10b981', list: applyFilter(myBookingsUpcoming.value), fmt: fmtRange, past: false,
+    dateRange: `${dayjs().endOf('week').add(1, 'day').format('M/D')} ~` },
+  { key: 'past', label: '지난 회의', color: '#94a3b8', list: applyFilter(myBookingsPast.value), fmt: fmtRange, past: true,
+    dateRange: `~ ${dayjs().subtract(1, 'day').format('M/D')}` },
+]);
+
+const sections = computed(() =>
+  activeFilter.value === 'all'
+    ? allSections.value
+    : allSections.value.filter(s => s.key === activeFilter.value)
+);
+
+const stats = computed(() => [
+  { key: 'all',   label: '전체', count: myBookings.value.length,          color: '#374151' },
+  { key: 'today', label: '오늘', count: myBookingsToday.value.length,      color: '#3b82f6' },
+  { key: 'week',  label: '이번 주', count: myBookingsThisWeek.value.length, color: '#8b5cf6' },
+  { key: 'later', label: '이후', count: myBookingsUpcoming.value.length,   color: '#10b981' },
+  { key: 'past',  label: '지난', count: myBookingsPast.value.length,       color: '#94a3b8' },
+]);
+</script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar       { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+.slide-right-enter-active, .slide-right-leave-active { transition: transform 0.25s ease; }
+.slide-right-enter-from, .slide-right-leave-to       { transform: translateX(100%); }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to       { opacity: 0; }
+</style>
+

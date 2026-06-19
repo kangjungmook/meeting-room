@@ -1,0 +1,30 @@
+# 민감 정보
+meeting-room/src/main/resources/firebase-service-account.json
+meeting-room/src/main/resources/application.yml
+meeting-room/src/main/resources/application-local.yml
+
+# SSL 인증서
+*.jks
+*.p12
+*.pfx
+
+# 빌드 산출물
+frontend/dist/
+meeting-room/build/
+meeting-room/.gradle/
+meeting-room/bin/
+meeting-room/src/main/resources/static/
+*.class
+*.jar
+
+# 의존성
+frontend/node_modules/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 기타
+.env
+.claude/

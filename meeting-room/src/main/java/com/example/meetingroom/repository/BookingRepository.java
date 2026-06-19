@@ -1,0 +1,55 @@
+package com.example.meetingroom.repository;
+
+import com.example.meetingroom.domain.Booking;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import jakarta.persistence.LockModeType;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+    // 특정 날짜 범위의 예약 목록 조회 (타임라인용)
+    List<Booking> findAllByStartTimeBetween(LocalDateTime start, LocalDateTime end);
+
+    // 특정 시작 시간 범위의 예약 조회 (알림 스케줄러용)
+    @Query("SELECT b FROM Booking b WHERE b.status != 'CANCELLED' " +
+           "AND b.startTime >= :from AND b.startTime < :to")
+    List<Booking> findConfirmedStartingBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
+
+    // 중복 예약 확인 쿼리 (비관적 잠금 — 동시 요청 시 선행 트랜잭션이 커밋될 때까지 대기)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT b FROM Booking b WHERE b.roomId = :roomId " +
+            "AND b.status != 'CANCELLED' " +
+            "AND b.startTime < :endTime AND b.endTime > :startTime")
+    List<Booking> findOverlappingBookings(
+            @Param("roomId") Long roomId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
+
+    // 수정 시 자기 자신 제외한 중복 체크 (비관적 잠금)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT b FROM Booking b WHERE b.roomId = :roomId AND b.id != :excludeId " +
+            "AND b.status != 'CANCELLED' " +
+            "AND b.startTime < :endTime AND b.endTime > :startTime")
+    List<Booking> findOverlappingBookingsExcluding(
+            @Param("roomId") Long roomId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            @Param("excludeId") Long excludeId
+    );
+
+    // 내가 예약자이거나 참석자인 예약 조회 (booking_attendees 테이블 JOIN)
+    @Query("SELECT DISTINCT b FROM Booking b LEFT JOIN BookingAttendee ba ON ba.bookingId = b.id " +
+           "WHERE b.status != 'CANCELLED' " +
+           "AND (b.userId = :userId OR ba.userId = :userId) " +
+           "ORDER BY b.startTime ASC")
+    List<Booking> findMyBookings(@Param("userId") Long userId);
+}
